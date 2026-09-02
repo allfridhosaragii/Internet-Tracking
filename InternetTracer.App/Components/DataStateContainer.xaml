@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="InternetTracer_App.Components.DataStateContainer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <!-- NORMAL / STALE / DEGRADED STATE (Show Content) -->
+        <ContentPresenter x:Name="MainContentPresenter" 
+                          Content="{x:Bind Content, Mode=OneWay}" 
+                          Visibility="Collapsed" />
+
+        <!-- LOADING STATE -->
+        <StackPanel x:Name="LoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Spacing="16">
+            <ProgressRing IsActive="True" Width="32" Height="32" />
+            <TextBlock Text="{x:Bind LoadingMessage, Mode=OneWay}" Style="{StaticResource TypographySecondary}" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- EMPTY STATE -->
+        <StackPanel x:Name="EmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Spacing="8">
+            <FontIcon Glyph="&#xE7BA;" FontSize="32" Foreground="{ThemeResource TextSecondaryBrush}" />
+            <TextBlock Text="{x:Bind EmptyMessage, Mode=OneWay}" Style="{StaticResource TypographySecondary}" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- OFFLINE STATE -->
+        <StackPanel x:Name="OfflinePanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Spacing="12">
+            <FontIcon Glyph="&#xF384;" FontSize="32" Foreground="{ThemeResource TextSecondaryBrush}" />
+            <TextBlock Text="Service Offline" Style="{StaticResource TypographySectionTitle}" HorizontalAlignment="Center"/>
+            <TextBlock Text="{x:Bind OfflineMessage, Mode=OneWay}" Style="{StaticResource TypographySecondary}" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300" TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- ERROR STATE -->
+        <StackPanel x:Name="ErrorPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Spacing="12">
+            <FontIcon Glyph="&#xEA39;" FontSize="32" Foreground="{ThemeResource TelemetryErrorBrush}" />
+            <TextBlock Text="Error Loading Data" Style="{StaticResource TypographySectionTitle}" HorizontalAlignment="Center" Foreground="{ThemeResource TelemetryErrorBrush}"/>
+            <TextBlock Text="{x:Bind ErrorMessage, Mode=OneWay}" Style="{StaticResource TypographySecondary}" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300" TextWrapping="Wrap"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:InternetTracer_App.Converters"
     xmlns:core="using:InternetTracer.Core.Contracts"
+    xmlns:components="using:InternetTracer_App.Components"
     mc:Ignorable="d"
     Background="Transparent">
 
@@ -15,93 +16,195 @@
         <converters:ByteFormatUnitConverter x:Key="ByteUnitConverter" />
     </Page.Resources>
 
-    <ScrollViewer>
-        <Grid Margin="24">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" /> <!-- Header -->
-                <RowDefinition Height="Auto" /> <!-- Top KPIs -->
-                <RowDefinition Height="Auto" /> <!-- Top Apps -->
-            </Grid.RowDefinitions>
+    <components:DataStateContainer 
+        State="{x:Bind ViewModel.DashboardDataState, Mode=OneWay}"
+        ErrorMessage="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+        OfflineMessage="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+        HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
-            <TextBlock Grid.Row="0" Text="Overview" Style="{StaticResource TypographyPageTitle}" />
+        <ScrollViewer>
+            <StackPanel Margin="32" Spacing="24">
+                
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup>
+                        <!-- Wide Layout -->
+                        <VisualState x:Name="WideLayout">
+                            <VisualState.StateTriggers>
+                                <AdaptiveTrigger MinWindowWidth="1024" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Target="TrafficGrid.ColumnDefinitions[0].Width" Value="*" />
+                                <Setter Target="TrafficGrid.ColumnDefinitions[1].Width" Value="*" />
+                                <Setter Target="NetworkGrid.ColumnDefinitions[0].Width" Value="*" />
+                                <Setter Target="NetworkGrid.ColumnDefinitions[1].Width" Value="*" />
+                                <Setter Target="UploadCard.(Grid.Column)" Value="1" />
+                                <Setter Target="UploadCard.(Grid.Row)" Value="0" />
+                                <Setter Target="ActiveConnectionsCard.(Grid.Column)" Value="1" />
+                                <Setter Target="ActiveConnectionsCard.(Grid.Row)" Value="0" />
+                                <Setter Target="UploadCard.Margin" Value="16,0,0,0" />
+                                <Setter Target="ActiveConnectionsCard.Margin" Value="16,0,0,0" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <!-- Narrow Layout -->
+                        <VisualState x:Name="NarrowLayout">
+                            <VisualState.StateTriggers>
+                                <AdaptiveTrigger MinWindowWidth="0" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <!-- Stack vertically -->
+                                <Setter Target="TrafficGrid.ColumnDefinitions[0].Width" Value="*" />
+                                <Setter Target="TrafficGrid.ColumnDefinitions[1].Width" Value="0" />
+                                <Setter Target="NetworkGrid.ColumnDefinitions[0].Width" Value="*" />
+                                <Setter Target="NetworkGrid.ColumnDefinitions[1].Width" Value="0" />
+                                
+                                <Setter Target="UploadCard.(Grid.Column)" Value="0" />
+                                <Setter Target="UploadCard.(Grid.Row)" Value="1" />
+                                <Setter Target="ActiveConnectionsCard.(Grid.Column)" Value="0" />
+                                <Setter Target="ActiveConnectionsCard.(Grid.Row)" Value="1" />
+                                
+                                <Setter Target="UploadCard.Margin" Value="0,16,0,0" />
+                                <Setter Target="ActiveConnectionsCard.Margin" Value="0,16,0,0" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
 
-            <!-- KPI Row -->
-            <Grid Grid.Row="1" ColumnSpacing="16" Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <!-- Current Download KPI -->
-                <Border Grid.Column="0" Style="{StaticResource SurfacePrimaryStyle}">
-                    <StackPanel>
-                        <TextBlock Text="CURRENT DOWNLOAD" Style="{StaticResource TypographySectionTitle}" />
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
-                                       Style="{StaticResource TypographyMetric}" 
-                                       Foreground="{ThemeResource TelemetryDownloadBrush}"/>
-                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
-                                       Style="{StaticResource TypographySecondary}" Margin="8,0,0,6" VerticalAlignment="Bottom" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Current Upload KPI -->
-                <Border Grid.Column="1" Style="{StaticResource SurfacePrimaryStyle}">
-                    <StackPanel>
-                        <TextBlock Text="CURRENT UPLOAD" Style="{StaticResource TypographySectionTitle}" />
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
-                                       Style="{StaticResource TypographyMetric}" 
-                                       Foreground="{ThemeResource TelemetryUploadBrush}"/>
-                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
-                                       Style="{StaticResource TypographySecondary}" Margin="8,0,0,6" VerticalAlignment="Bottom" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Connection Quality KPI -->
-                <Border Grid.Column="2" Style="{StaticResource SurfacePrimaryStyle}">
-                    <StackPanel>
-                        <TextBlock Text="CONNECTION QUALITY" Style="{StaticResource TypographySectionTitle}" />
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <TextBlock Text="{x:Bind ViewModel.Quality.Status, Mode=OneWay}" 
-                                       Style="{StaticResource TypographyMetric}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </Grid>
-            
-            <Border Grid.Row="2" Style="{StaticResource SurfacePrimaryStyle}">
-                <StackPanel>
-                    <TextBlock Text="TOP APPLICATIONS (TODAY)" Style="{StaticResource TypographySectionTitle}" />
+                <!-- 1. LIVE STATE HEADER -->
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     
-                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.Summary.TopApplications, Mode=OneWay}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="core:TopUsageEntry">
-                                <Grid Margin="0,4,0,4">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <TextBlock Grid.Column="0" Text="{x:Bind DisplayName}" VerticalAlignment="Center" FontFamily="{StaticResource BodyFontFamily}" />
-                                    
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
-                                        <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteValueConverter}}" FontWeight="SemiBold" />
-                                        <TextBlock Text=" " />
-                                        <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteUnitConverter}}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
-                </StackPanel>
-            </Border>
-            
-            <ProgressRing Grid.Row="2" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Width="50" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        </Grid>
-    </ScrollViewer>
+                    <TextBlock Grid.Column="0" Text="LIVE SYSTEM STATE" Style="{StaticResource TypographyPageTitle}" Margin="0"/>
+                    
+                    <!-- Freshness Indicator -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                        <Ellipse Width="10" Height="10" Fill="{ThemeResource TelemetryDownloadBrush}">
+                            <Ellipse.Triggers>
+                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:1" AutoReverse="True"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Ellipse.Triggers>
+                        </Ellipse>
+                        <TextBlock Text="{x:Bind ViewModel.LastUpdatedText, Mode=OneWay}" Style="{StaticResource TypographySecondary}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- 2. TRAFFIC -->
+                <Grid x:Name="TrafficGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" Grid.Row="0" Style="{StaticResource SurfacePrimaryStyle}" Margin="0">
+                        <StackPanel>
+                            <TextBlock Text="DOWNLOAD" Style="{StaticResource TypographySectionTitle}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0" Spacing="8">
+                                <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
+                                           Style="{StaticResource TypographyDisplay}" 
+                                           Foreground="{ThemeResource TelemetryDownloadBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
+                                           Style="{StaticResource TypographySecondary}" VerticalAlignment="Bottom" Margin="0,0,0,8"/>
+                            </StackPanel>
+                            <TextBlock Text="{x:Bind ViewModel.Summary.TodayTraffic.DownloadBytes, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" Style="{StaticResource TypographySecondary}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border x:Name="UploadCard" Grid.Column="1" Grid.Row="0" Style="{StaticResource SurfacePrimaryStyle}" Margin="0">
+                        <StackPanel>
+                            <TextBlock Text="UPLOAD" Style="{StaticResource TypographySectionTitle}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0" Spacing="8">
+                                <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
+                                           Style="{StaticResource TypographyDisplay}" 
+                                           Foreground="{ThemeResource TelemetryUploadBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
+                                           Style="{StaticResource TypographySecondary}" VerticalAlignment="Bottom" Margin="0,0,0,8"/>
+                            </StackPanel>
+                            <TextBlock Text="{x:Bind ViewModel.Summary.TodayTraffic.UploadBytes, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" Style="{StaticResource TypographySecondary}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- 3. APPLICATION ACTIVITY -->
+                <Border Style="{StaticResource SurfacePrimaryStyle}">
+                    <StackPanel>
+                        <TextBlock Text="TOP APPLICATIONS (TODAY)" Style="{StaticResource TypographySectionTitle}" />
+                        
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Summary.TopApplications, Mode=OneWay}" Margin="0,8,0,0">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="core:TopUsageEntry">
+                                    <Grid Margin="0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="{x:Bind DisplayName}" Style="{StaticResource TypographyDataValue}" VerticalAlignment="Center" />
+                                        
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteValueConverter}}" Style="{StaticResource TypographyDataValue}" />
+                                            <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteUnitConverter}}" Style="{StaticResource TypographyCaption}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </Border>
+
+                <!-- 4. NETWORK / CONNECTION -->
+                <Grid x:Name="NetworkGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Grid.Row="0" Style="{StaticResource SurfacePrimaryStyle}" Margin="0">
+                        <StackPanel>
+                            <TextBlock Text="CONNECTION QUALITY" Style="{StaticResource TypographySectionTitle}" />
+                            <TextBlock Text="{x:Bind ViewModel.Quality.Status, Mode=OneWay}" Style="{StaticResource TypographyMetric}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border x:Name="ActiveConnectionsCard" Grid.Column="1" Grid.Row="0" Style="{StaticResource SurfacePrimaryStyle}" Margin="0">
+                        <StackPanel>
+                            <TextBlock Text="ACTIVE CONNECTIONS" Style="{StaticResource TypographySectionTitle}" />
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.ActiveConnections, Mode=OneWay}" Style="{StaticResource TypographyMetric}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                
+                <!-- 5. HISTORY / CONTEXT (Placeholder for K4 visualizer) -->
+                <Border Style="{StaticResource SurfacePrimaryStyle}">
+                    <StackPanel>
+                        <TextBlock Text="TRAFFIC TIMELINE" Style="{StaticResource TypographySectionTitle}" />
+                        <TextBlock Text="[Live Visualization reserved for K4 Phase]" Style="{StaticResource TypographySecondary}" Margin="0,24" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 6. ANOMALIES -->
+                <Border Style="{StaticResource SurfacePrimaryStyle}">
+                    <StackPanel>
+                        <TextBlock Text="OBSERVATIONS" Style="{StaticResource TypographySectionTitle}" />
+                        <TextBlock Text="No active network anomalies detected." Style="{StaticResource TypographySecondary}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </components:DataStateContainer>
 </Page>
