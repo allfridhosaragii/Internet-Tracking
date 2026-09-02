@@ -108,11 +108,11 @@ public class TelemetryIntegrityTests : IDisposable
         Assert.Equal(2, aggregates.Count);
         
         // 12:00:59 belongs in the 12:00 bucket
-        Assert.Equal(new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc), aggregates[0].BucketUtc);
+        Assert.Equal(new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc), aggregates[0].BucketUtc.ToUniversalTime());
         Assert.Equal(100, aggregates[0].DownloadBytes);
         
         // 12:01:00 belongs in the 12:01 bucket
-        Assert.Equal(new DateTime(2025, 1, 1, 12, 1, 0, DateTimeKind.Utc), aggregates[1].BucketUtc);
+        Assert.Equal(new DateTime(2025, 1, 1, 12, 1, 0, DateTimeKind.Utc), aggregates[1].BucketUtc.ToUniversalTime());
         Assert.Equal(200, aggregates[1].DownloadBytes);
     }
 

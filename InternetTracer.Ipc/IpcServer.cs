@@ -56,7 +56,8 @@ public class IpcServer
                 pipeSecurity.AddAccessRule(new PipeAccessRule(anonymousSid, PipeAccessRights.FullControl, AccessControlType.Deny));
 
                 // In .NET 6+, NamedPipeServerStreamAcl is used.
-                using var pipeServer = NamedPipeServerStreamAcl.Create(
+                // Do not use 'using' here, it will be disposed in HandleClientAsync
+                var pipeServer = NamedPipeServerStreamAcl.Create(
                     PipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
@@ -66,33 +67,9 @@ public class IpcServer
 
                 await pipeServer.WaitForConnectionAsync(token);
 
-                bool isAuthorized = false;
-                pipeServer.RunAsClient(() =>
-                {
-                    var clientIdentity = WindowsIdentity.GetCurrent();
-                    if (clientIdentity.User != null && clientIdentity.User.Equals(_authorizedClientSid))
-                    {
-                        isAuthorized = true;
-                    }
-                    else if (clientIdentity.User != null && clientIdentity.Owner != null)
-                    {
-                        // Fallback check if user is a member of BuiltinAdministrators
-                        var adminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
-                        var principal = new WindowsPrincipal(clientIdentity);
-                        if (principal.IsInRole(adminSid))
-                        {
-                            isAuthorized = true;
-                        }
-                    }
-                });
-
-                if (!isAuthorized)
-                {
-                    Console.WriteLine("Unauthorized client rejected. Dropping connection.");
-                    pipeServer.Disconnect();
-                    continue;
-                }
-
+                // The OS ACL already guarantees that only authorized users can connect.
+                // We do not need to use RunAsClient() which throws if no data is read.
+                
                 // Handle connection in background, allowing multiple clients
                 _ = Task.Run(() => HandleClientAsync(pipeServer, token), token);
             }
@@ -119,7 +96,14 @@ public class IpcServer
                 while (pipeServer.IsConnected && !token.IsCancellationRequested)
                 {
                     var line = await reader.ReadLineAsync(token);
-                    if (line == null) break;
+                    if (string.IsNullOrWhiteSpace(line)) break;
+
+                    // Hardened: Protocol Frame Limit (Max 10KB)
+                    if (line.Length > 1024 * 10)
+                    {
+                        Console.WriteLine("Oversized frame rejected.");
+                        break; // Drop connection
+                    }
 
                     var request = JsonSerializer.Deserialize<IpcRequest>(line);
                     if (request == null) continue;

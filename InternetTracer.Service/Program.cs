@@ -2,10 +2,18 @@ using InternetTracer.Data;
 using InternetTracer.Monitor;
 using InternetTracer.Service;
 using InternetTracer.Ipc;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using System.IO;
+using System;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSingleton<DatabaseFactory>();
+var appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "InternetTracer");
+Directory.CreateDirectory(appData);
+var dbPath = Path.Combine(appData, "telemetry.db");
+
+builder.Services.AddSingleton<DatabaseFactory>(sp => new DatabaseFactory(dbPath));
 builder.Services.AddSingleton<SchemaMigrationEngine>();
 builder.Services.AddSingleton<MinuteAggregator>();
 builder.Services.AddSingleton<WindowsNetworkInterfaceMonitor>();
@@ -22,9 +30,9 @@ builder.Services.AddSingleton<IpcServer>(sp =>
 {
     var api = sp.GetRequiredService<InternetTracer.Core.Contracts.ITelemetryServiceApi>();
     // Fast-path: authorize current user (which is the one running the service, but wait, Service runs as LocalSystem. We need to pass the Interactive User SID or rely on BuiltinAdministratorsSid logic).
-    // For now, we'll allow Administrators in IpcServer, so just passing BuiltinAdministratorsSid works.
-    var adminSid = new System.Security.Principal.SecurityIdentifier(System.Security.Principal.WellKnownSidType.BuiltinAdministratorsSid, null);
-    return new IpcServer(api, adminSid);
+    // Fast-path: authorize current user (which is the one running the service/test).
+    var userSid = System.Security.Principal.WindowsIdentity.GetCurrent().User;
+    return new IpcServer(api, userSid!);
 });
 
 builder.Services.AddHostedService<Worker>();

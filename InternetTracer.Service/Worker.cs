@@ -97,6 +97,9 @@ public class Worker : BackgroundService
                     var totalEtwRx = processTraffic.Values.Sum(x => x.rx) + 1; // +1 to avoid div by zero
                     var totalEtwTx = processTraffic.Values.Sum(x => x.tx) + 1;
                     
+                    long attributedRx = 0;
+                    long attributedTx = 0;
+
                     foreach (var pt in processTraffic)
                     {
                         var appRx = (long)((pt.Value.rx / (double)totalEtwRx) * delta.BytesReceived);
@@ -104,6 +107,9 @@ public class Worker : BackgroundService
                         
                         if (appRx > 0 || appTx > 0)
                         {
+                            attributedRx += appRx;
+                            attributedTx += appTx;
+
                             _minuteAggregator.AddSample(new TrafficSample 
                             {
                                 TimestampUtc = DateTime.UtcNow,
@@ -113,6 +119,22 @@ public class Worker : BackgroundService
                                 BytesSent = appTx
                             });
                         }
+                    }
+
+                    // Strict Conservation: The remainder must be tracked as Unattributed
+                    var remainingRx = delta.BytesReceived - attributedRx;
+                    var remainingTx = delta.BytesSent - attributedTx;
+
+                    if (remainingRx > 0 || remainingTx > 0)
+                    {
+                         _minuteAggregator.AddSample(new TrafficSample 
+                         {
+                             TimestampUtc = DateTime.UtcNow,
+                             InterfaceId = delta.InterfaceId,
+                             ApplicationId = null, // Unattributed
+                             BytesReceived = remainingRx > 0 ? remainingRx : 0,
+                             BytesSent = remainingTx > 0 ? remainingTx : 0
+                         });
                     }
                 }
                 
