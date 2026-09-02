@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternetTracer.Tests", "Int
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternetTracer.Monitor.EtwPrototype", "InternetTracer.Monitor.EtwPrototype\InternetTracer.Monitor.EtwPrototype.csproj", "{A173A35E-B474-4700-94E0-35B5825073DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternetTracer.Ipc", "InternetTracer.Ipc\InternetTracer.Ipc.csproj", "{F4999569-5685-448B-971E-3E52BC3D0B5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{A173A35E-B474-4700-94E0-35B5825073DA}.Release|x64.Build.0 = Release|Any CPU
 		{A173A35E-B474-4700-94E0-35B5825073DA}.Release|x86.ActiveCfg = Release|Any CPU
 		{A173A35E-B474-4700-94E0-35B5825073DA}.Release|x86.Build.0 = Release|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Debug|x64.Build.0 = Debug|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Debug|x86.Build.0 = Debug|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Release|x64.ActiveCfg = Release|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Release|x64.Build.0 = Release|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Release|x86.ActiveCfg = Release|Any CPU
+		{F4999569-5685-448B-971E-3E52BC3D0B5D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
