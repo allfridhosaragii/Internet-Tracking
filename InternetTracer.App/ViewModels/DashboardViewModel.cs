@@ -40,6 +40,11 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private Components.ComponentDataState _dashboardDataState = Components.ComponentDataState.Loading;
 
+    [ObservableProperty]
+    private TrafficTimeline? _timeline;
+
+    private CancellationTokenSource? _pollingCts;
+
 #pragma warning restore MVVMTK0045
 
     public DashboardViewModel(ITelemetryServiceApi telemetryService)
@@ -60,6 +65,10 @@ public partial class DashboardViewModel : ObservableObject
             Snapshot = await _telemetryService.GetCurrentSnapshotAsync();
             Quality = await _telemetryService.GetConnectionQualityAsync();
 
+            var endUtc = DateTime.UtcNow;
+            var startUtc = endUtc.AddSeconds(-60);
+            Timeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, "1s");
+
             LoadState = Summary == null || Snapshot == null ? DashboardLoadState.Empty : DashboardLoadState.Loaded;
             ConnectionState = TelemetryConnectionState.Connected;
             FreshnessState = TelemetryFreshnessState.Live;
@@ -68,6 +77,8 @@ public partial class DashboardViewModel : ObservableObject
             // Assume attribution is healthy if we have apps, or empty if we don't, but for now we say Healthy
             AttributionHealth = Summary?.TopApplications?.Count > 0 ? AttributionHealthState.Healthy : AttributionHealthState.Unavailable;
             ErrorMessage = string.Empty;
+
+            StartPolling();
         }
         catch (System.IO.IOException)
         {
@@ -86,6 +97,49 @@ public partial class DashboardViewModel : ObservableObject
         {
             UpdateComponentState();
         }
+    }
+
+    private void StartPolling()
+    {
+        _pollingCts?.Cancel();
+        _pollingCts = new CancellationTokenSource();
+        _ = PollLiveDataAsync(_pollingCts.Token);
+    }
+
+    private async Task PollLiveDataAsync(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(1000, token);
+                if (token.IsCancellationRequested) break;
+
+                Snapshot = await _telemetryService.GetCurrentSnapshotAsync();
+                
+                var endUtc = DateTime.UtcNow;
+                var startUtc = endUtc.AddSeconds(-60);
+                Timeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, "1s");
+
+                if (ConnectionState != TelemetryConnectionState.Connected)
+                {
+                    ConnectionState = TelemetryConnectionState.Connected;
+                    UpdateComponentState();
+                }
+            }
+            catch (Exception)
+            {
+                // Silently degrade on transient poll failure, but mark as stale/offline if it persists
+                ConnectionState = TelemetryConnectionState.Offline;
+                UpdateComponentState();
+                break;
+            }
+        }
+    }
+
+    public void OnNavigatedFrom()
+    {
+        _pollingCts?.Cancel();
     }
 
     private void UpdateComponentState()

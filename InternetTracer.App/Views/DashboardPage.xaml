@@ -188,11 +188,11 @@
                     </Border>
                 </Grid>
                 
-                <!-- 5. HISTORY / CONTEXT (Placeholder for K4 visualizer) -->
+                <!-- 5. HISTORY / CONTEXT -->
                 <Border Style="{StaticResource SurfacePrimaryStyle}">
                     <StackPanel>
                         <TextBlock Text="TRAFFIC TIMELINE" Style="{StaticResource TypographySectionTitle}" />
-                        <TextBlock Text="[Live Visualization reserved for K4 Phase]" Style="{StaticResource TypographySecondary}" Margin="0,24" HorizontalAlignment="Center"/>
+                        <components:LiveTrafficVisualizer Timeline="{x:Bind ViewModel.Timeline, Mode=OneWay}" Margin="0,16,0,0" />
                     </StackPanel>
                 </Border>
                 
