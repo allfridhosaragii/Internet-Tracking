@@ -85,6 +85,20 @@ public partial class TrafficExplorerViewModel : ObservableObject
     public ObservableCollection<string> UniqueNetworkIds { get; } = new();
 
     /// <summary>
+    /// Property for sort field selection in UI
+    /// </summary>
+    // Note: _sortBy is defined via [ObservableProperty] attribute above
+    public System.Collections.ObjectModel.ObservableCollection<string> AvailableSortFields { get; } = new()
+    {
+        "TotalBytes",
+        "DownloadBytes", 
+        "UploadBytes",
+        "DisplayName"
+    };
+
+    public string SortDirectionGlyph => SortDescending ? "\u2193" : "\u2191";  // Down/Up arrows
+
+    /// <summary>
     /// Constructor for production use (requires IPC client injection).
     /// Mock data support removed entirely - violates trust principle if left in production builds.
     /// </summary>
@@ -360,6 +374,12 @@ public partial class TrafficExplorerViewModel : ObservableObject
         
         SortBy = "TotalBytes";
         SortDescending = true;
+    }
+
+    [RelayCommand]
+    private void ToggleSortDirection()
+    {
+        SortDescending = !SortDescending;
     }
 
     public void OnNavigatedFrom()

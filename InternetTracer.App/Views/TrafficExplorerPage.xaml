@@ -28,9 +28,56 @@
 
         <!-- Time Range Selector -->
         <Border Margin="24, 0, 24, 16" Padding="16, 12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" CornerRadius="8">
-            <!-- Time Range Selector -->
-            <c:TimeRangeSelector x:Name="TimeRangeSelector" 
-                               SelectTimeRangeCommand="{Binding SelectTimeRangeCommand}" />
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
+                    <TextBlock Text="Filters:" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    
+                    <!-- Application Filter Dropdown -->
+                    <ComboBox ItemsSource="{Binding UniqueApplicationIds}" 
+                              SelectedItem="{Binding SelectedFilterApplicationId, Mode=TwoWay}"
+                              PlaceholderText="All Applications"
+                              Width="200">
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="Padding" Value="12,6" />
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+                    
+                    <!-- Network Filter Dropdown -->
+                    <ComboBox ItemsSource="{Binding UniqueNetworkIds}" 
+                              SelectedItem="{Binding SelectedFilterNetworkId, Mode=TwoWay}"
+                              PlaceholderText="All Networks"
+                              Width="200" />
+                    
+                    <!-- Sort Control -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="4">
+                        <TextBlock Text="Sort by: " FontSize="14" VerticalAlignment="Center" />
+                        <ComboBox ItemsSource="{Binding AvailableSortFields}"
+                                  SelectedItem="{Binding SortBy, Mode=TwoWay}"
+                                  Width="150" />
+                        <Button Command="{Binding ToggleSortDirectionCommand}"
+                                Width="40"
+                                Height="28"
+                                ToolTipService.ToolTip="Toggle sort direction">
+                            <FontIcon Glyph="{Binding SortDirectionGlyph}" />
+                        </Button>
+                    </StackPanel>
+                    
+                    <!-- Search Box (aligned right) -->
+                    <TextBox PlaceholderText="Search applications..."
+                             Text="{Binding SearchText, Mode=TwoWay}"
+                             Width="200"
+                             Margin="20,0,0,0"
+                             VerticalContentAlignment="Center" />
+                    
+                    <!-- Clear Filters Button -->
+                    <Button Content="Clear All"
+                            Command="{Binding ClearFiltersCommand}"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Margin="12,0,0,0" />
+                </StackPanel>
+            </StackPanel>
         </Border>
 
         <!-- Main Content Grid -->

@@ -124,6 +124,42 @@ public class IpcClient : ITelemetryServiceApi, IDisposable
                ?? new ConnectionQuality();
     }
 
+    #region K16 Phase 4: Filtering and Search Support
+
+    public async Task<List<string>> GetUniqueApplicationIdsAsync(DateTime startUtc, DateTime endUtc)
+    {
+        return await SendRequestAsync<List<string>>("GetUniqueApplicationIds", new { startUtc, endUtc })
+               ?? new List<string>();
+    }
+
+    public async Task<List<string>> GetUniqueNetworkIdsAsync(DateTime startUtc, DateTime endUtc)
+    {
+        return await SendRequestAsync<List<string>>("GetUniqueNetworkIds", new { startUtc, endUtc })
+               ?? new List<string>();
+    }
+
+    public Task<List<TopUsageEntry>> GetTopApplicationsFilteredAsync(DateTime startUtc, DateTime endUtc, int limit, string? appId)
+    {
+        return SendRequestAsync<List<TopUsageEntry>>("GetTopApplicationsFiltered", new { startUtc, endUtc, limit, appId });
+    }
+
+    public Task<List<TopUsageEntry>> GetTopApplicationsSortedAsync(DateTime startUtc, DateTime endUtc, int limit, string sortBy, bool descending)
+    {
+        return SendRequestAsync<List<TopUsageEntry>>("GetTopApplicationsSorted", new { startUtc, endUtc, limit, sortBy, descending });
+    }
+
+    public Task<List<NetworkUsage>> GetNetworkUsageFilteredAsync(DateTime startUtc, DateTime endUtc, string? networkId)
+    {
+        return SendRequestAsync<List<NetworkUsage>>("GetNetworkUsageFiltered", new { startUtc, endUtc, networkId });
+    }
+
+    public Task<List<TopUsageEntry>> SearchApplicationsAsync(DateTime startUtc, DateTime endUtc, string searchTerm, int limit)
+    {
+        return SendRequestAsync<List<TopUsageEntry>>("SearchApplications", new { startUtc, endUtc, searchTerm, limit });
+    }
+
+    #endregion
+
     public void Dispose()
     {
         _reader?.Dispose();

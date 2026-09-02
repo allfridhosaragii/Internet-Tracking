@@ -170,6 +170,86 @@ public class IpcServer
                         response.Payload = JsonSerializer.SerializeToElement(apps);
                     }
                     break;
+                
+                // K16 Phase 4: Filtering and Search Operations
+                case "GetUniqueApplicationIds":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        var ids = await _apiImplementation.GetUniqueApplicationIdsAsync(start, end);
+                        response.Payload = JsonSerializer.SerializeToElement(ids);
+                    }
+                    break;
+
+                case "GetUniqueNetworkIds":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        var ids = await _apiImplementation.GetUniqueNetworkIdsAsync(start, end);
+                        response.Payload = JsonSerializer.SerializeToElement(ids);
+                    }
+                    break;
+
+                case "GetTopApplicationsFiltered":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        var limit = req.GetProperty("limit").GetInt32();
+                        string? appId = null;
+                        if (req.TryGetProperty("appId", out var appIdElem))
+                            appId = appIdElem.GetString();
+                        var apps = await _apiImplementation.GetTopApplicationsFilteredAsync(start, end, limit, appId);
+                        response.Payload = JsonSerializer.SerializeToElement(apps);
+                    }
+                    break;
+
+                case "GetTopApplicationsSorted":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        var limit = req.GetProperty("limit").GetInt32();
+                        var sortBy = req.GetProperty("sortBy").GetString() ?? "TotalBytes";
+                        var descending = req.GetProperty("descending").GetBoolean();
+                        var apps = await _apiImplementation.GetTopApplicationsSortedAsync(start, end, limit, sortBy, descending);
+                        response.Payload = JsonSerializer.SerializeToElement(apps);
+                    }
+                    break;
+
+                case "GetNetworkUsageFiltered":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        string? netId = null;
+                        if (req.TryGetProperty("networkId", out var netIdElem))
+                            netId = netIdElem.GetString();
+                        var networks = await _apiImplementation.GetNetworkUsageFilteredAsync(start, end, netId);
+                        response.Payload = JsonSerializer.SerializeToElement(networks);
+                    }
+                    break;
+
+                case "SearchApplications":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        var searchTerm = req.GetProperty("searchTerm").GetString() ?? "";
+                        var limit = req.GetProperty("limit").GetInt32();
+                        var apps = await _apiImplementation.SearchApplicationsAsync(start, end, searchTerm, limit);
+                        response.Payload = JsonSerializer.SerializeToElement(apps);
+                    }
+                    break;
+                
                 default:
                     response.StatusCode = 404;
                     response.ErrorCode = "UnknownOperation";

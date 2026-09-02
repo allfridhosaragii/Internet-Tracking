@@ -326,8 +326,31 @@ public class SqliteTelemetryQueryService : ITelemetryServiceApi
 
     private static string ValidateSortField(string sortBy)
     {
-        var validFields = new[] { "TotalBytes", "DownloadBytes", "UploadBytes", "DisplayName" };
-        return validFields.Contains(sortBy) ? sortBy : "TotalBytes";
+        // Strict allowlist - map from UI enum/value to actual SQL column names
+        switch (sortBy.ToLowerInvariant())
+        {
+            case "totalbytes":
+                return "SUM(download_bytes + upload_bytes)";
+            case "downloadbytes":
+                return "SUM(download_bytes)";
+            case "uploadbytes":
+                return "SUM(upload_bytes)";
+            case "displayname":
+            case "applicationid":
+            case "processname":
+                return "application_id";
+            default:
+                // Default to total bytes if invalid
+                return "SUM(download_bytes + upload_bytes)";
+        }
+    }
+
+    /// <summary>
+    /// Public wrapper for testing purposes - allows external verification of sort field validation.
+    /// </summary>
+    public static string ValidateSortFieldForTesting(string sortBy)
+    {
+        return ValidateSortField(sortBy);
     }
 
     /// <summary>
