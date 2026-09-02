@@ -23,7 +23,7 @@
                 <RowDefinition Height="Auto" /> <!-- Top Apps -->
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Overview" Style="{StaticResource DashboardHeaderStyle}" />
+            <TextBlock Grid.Row="0" Text="Overview" Style="{StaticResource TypographyPageTitle}" />
 
             <!-- KPI Row -->
             <Grid Grid.Row="1" ColumnSpacing="16" Margin="0,0,0,24">
@@ -34,48 +34,48 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Current Download KPI -->
-                <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                <Border Grid.Column="0" Style="{StaticResource SurfacePrimaryStyle}">
                     <StackPanel>
-                        <TextBlock Text="CURRENT DOWNLOAD" Style="{StaticResource CardTitleStyle}" />
+                        <TextBlock Text="CURRENT DOWNLOAD" Style="{StaticResource TypographySectionTitle}" />
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
-                                       Style="{StaticResource KpiValueStyle}" 
-                                       Foreground="{StaticResource TelemetryDownloadBrush}"/>
+                                       Style="{StaticResource TypographyMetric}" 
+                                       Foreground="{ThemeResource TelemetryDownloadBrush}"/>
                             <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
-                                       Style="{StaticResource KpiUnitStyle}" />
+                                       Style="{StaticResource TypographySecondary}" Margin="8,0,0,6" VerticalAlignment="Bottom" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- Current Upload KPI -->
-                <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}">
+                <Border Grid.Column="1" Style="{StaticResource SurfacePrimaryStyle}">
                     <StackPanel>
-                        <TextBlock Text="CURRENT UPLOAD" Style="{StaticResource CardTitleStyle}" />
+                        <TextBlock Text="CURRENT UPLOAD" Style="{StaticResource TypographySectionTitle}" />
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
-                                       Style="{StaticResource KpiValueStyle}" 
-                                       Foreground="{StaticResource TelemetryUploadBrush}"/>
+                                       Style="{StaticResource TypographyMetric}" 
+                                       Foreground="{ThemeResource TelemetryUploadBrush}"/>
                             <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
-                                       Style="{StaticResource KpiUnitStyle}" />
+                                       Style="{StaticResource TypographySecondary}" Margin="8,0,0,6" VerticalAlignment="Bottom" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- Connection Quality KPI -->
-                <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                <Border Grid.Column="2" Style="{StaticResource SurfacePrimaryStyle}">
                     <StackPanel>
-                        <TextBlock Text="CONNECTION QUALITY" Style="{StaticResource CardTitleStyle}" />
+                        <TextBlock Text="CONNECTION QUALITY" Style="{StaticResource TypographySectionTitle}" />
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <TextBlock Text="{x:Bind ViewModel.Quality.Status, Mode=OneWay}" 
-                                       Style="{StaticResource KpiValueStyle}" />
+                                       Style="{StaticResource TypographyMetric}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
             </Grid>
             
-            <Border Grid.Row="2" Style="{StaticResource DashboardCardStyle}">
+            <Border Grid.Row="2" Style="{StaticResource SurfacePrimaryStyle}">
                 <StackPanel>
-                    <TextBlock Text="TOP APPLICATIONS (TODAY)" Style="{StaticResource CardTitleStyle}" />
+                    <TextBlock Text="TOP APPLICATIONS (TODAY)" Style="{StaticResource TypographySectionTitle}" />
                     
                     <ItemsRepeater ItemsSource="{x:Bind ViewModel.Summary.TopApplications, Mode=OneWay}">
                         <ItemsRepeater.ItemTemplate>

@@ -26,12 +26,20 @@
 
         <NavigationView Grid.Row="1" x:Name="NavView" PaneDisplayMode="Auto" IsBackButtonVisible="Collapsed" ItemInvoked="NavView_ItemInvoked">
             <NavigationView.MenuItems>
-                <NavigationViewItem Icon="Home" Content="Dashboard" Tag="DashboardPage" />
+                <!-- Primary Information Architecture -->
+                <NavigationViewItem Icon="Home" Content="Overview" Tag="DashboardPage" />
                 <NavigationViewItem Icon="Sync" Content="Traffic" Tag="TrafficPage" />
                 <NavigationViewItem Icon="List" Content="Applications" Tag="ApplicationsPage" />
                 <NavigationViewItem Icon="Globe" Content="Networks" Tag="NetworksPage" />
                 <NavigationViewItem Icon="Clock" Content="Sessions" Tag="SessionsPage" />
+                <NavigationViewItem Icon="GoToToday" Content="Analytics" Tag="AnalyticsPage" />
             </NavigationView.MenuItems>
+            
+            <NavigationView.FooterMenuItems>
+                <!-- Supporting Areas -->
+                <NavigationViewItem Icon="Important" Content="Alerts" Tag="AlertsPage" />
+                <NavigationViewItem Icon="Setting" Content="Settings" Tag="SettingsPage" />
+            </NavigationView.FooterMenuItems>
 
             <Frame x:Name="RootFrame" />
         </NavigationView>

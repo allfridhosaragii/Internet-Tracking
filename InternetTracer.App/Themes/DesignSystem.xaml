@@ -2,74 +2,175 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- 
-        Internet Tracer Design System 
-        Strict anti-slop rules: 
-        1. Typography: Segoe UI Variable Display for headers, Text for body.
-        2. Colors: High-contrast data visualization colors. 
-        3. Surfaces: Use LayerFillColorDefaultBrush instead of excessive glass.
-    -->
+    <ResourceDictionary.ThemeDictionaries>
+        <!-- DARK THEME (PRIMARY) -->
+        <ResourceDictionary x:Key="Default">
+            <!-- Background & Surfaces -->
+            <SolidColorBrush x:Key="AppWindowBackgroundBrush" Color="#0B0B0B" />
+            <SolidColorBrush x:Key="AppNavigationBackgroundBrush" Color="Transparent" />
+            
+            <SolidColorBrush x:Key="SurfacePrimaryBrush" Color="#1C1C1C" />
+            <SolidColorBrush x:Key="SurfaceSecondaryBrush" Color="#282828" />
+            <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="#333333" />
+            
+            <SolidColorBrush x:Key="SurfaceBorderBrush" Color="#33FFFFFF" />
+            
+            <!-- Text Colors -->
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#AFAFAF" />
+            <SolidColorBrush x:Key="TextDisabledBrush" Color="#666666" />
+            
+            <!-- Semantic Telemetry Colors -->
+            <SolidColorBrush x:Key="TelemetryDownloadBrush" Color="#4CAF50" /> <!-- Green -->
+            <SolidColorBrush x:Key="TelemetryUploadBrush" Color="#42A5F5" />   <!-- Blue -->
+            <SolidColorBrush x:Key="TelemetryNeutralBrush" Color="#9E9E9E" />  <!-- Gray -->
+            <SolidColorBrush x:Key="TelemetrySuccessBrush" Color="#4CAF50" />
+            <SolidColorBrush x:Key="TelemetryWarningBrush" Color="#FFCA28" />
+            <SolidColorBrush x:Key="TelemetryErrorBrush" Color="#F44336" />
+            <SolidColorBrush x:Key="TelemetryUnknownBrush" Color="#757575" />
+        </ResourceDictionary>
+        
+        <!-- LIGHT THEME -->
+        <ResourceDictionary x:Key="Light">
+            <!-- Background & Surfaces -->
+            <SolidColorBrush x:Key="AppWindowBackgroundBrush" Color="#F3F3F3" />
+            <SolidColorBrush x:Key="AppNavigationBackgroundBrush" Color="Transparent" />
+            
+            <SolidColorBrush x:Key="SurfacePrimaryBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="SurfaceSecondaryBrush" Color="#F9F9F9" />
+            <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="#FFFFFF" />
+            
+            <SolidColorBrush x:Key="SurfaceBorderBrush" Color="#1A000000" />
+            
+            <!-- Text Colors -->
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#111111" />
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#666666" />
+            <SolidColorBrush x:Key="TextDisabledBrush" Color="#999999" />
+            
+            <!-- Semantic Telemetry Colors (Tuned for contrast on light background) -->
+            <SolidColorBrush x:Key="TelemetryDownloadBrush" Color="#2E7D32" /> <!-- Darker Green -->
+            <SolidColorBrush x:Key="TelemetryUploadBrush" Color="#1565C0" />   <!-- Darker Blue -->
+            <SolidColorBrush x:Key="TelemetryNeutralBrush" Color="#757575" />  <!-- Darker Gray -->
+            <SolidColorBrush x:Key="TelemetrySuccessBrush" Color="#2E7D32" />
+            <SolidColorBrush x:Key="TelemetryWarningBrush" Color="#F57F17" />  <!-- Darker Amber -->
+            <SolidColorBrush x:Key="TelemetryErrorBrush" Color="#D32F2F" />
+            <SolidColorBrush x:Key="TelemetryUnknownBrush" Color="#9E9E9E" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
 
-    <!-- Typography Tokens -->
-    <FontFamily x:Key="BrandFontFamily">Segoe UI Variable Display, Segoe UI, Arial, sans-serif</FontFamily>
-    <FontFamily x:Key="BodyFontFamily">Segoe UI Variable Text, Segoe UI, Arial, sans-serif</FontFamily>
+    <!-- SPACING TOKENS (Grid 4px/8px system) -->
+    <Thickness x:Key="SpacingNano">4</Thickness>
+    <Thickness x:Key="SpacingMicro">8</Thickness>
+    <Thickness x:Key="SpacingSmall">12</Thickness>
+    <Thickness x:Key="SpacingStandard">16</Thickness>
+    <Thickness x:Key="SpacingMedium">24</Thickness>
+    <Thickness x:Key="SpacingLarge">32</Thickness>
+    <Thickness x:Key="SpacingXLarge">48</Thickness>
 
-    <!-- Semantic Color Tokens for Telemetry (Dark Theme Optimized) -->
-    <SolidColorBrush x:Key="TelemetryDownloadBrush" Color="#4CAF50" /> <!-- Green for DL -->
-    <SolidColorBrush x:Key="TelemetryUploadBrush" Color="#2196F3" />   <!-- Blue for UL -->
-    <SolidColorBrush x:Key="TelemetryWarningBrush" Color="#FFC107" />  <!-- Amber for Warning/Loss -->
-    <SolidColorBrush x:Key="TelemetryErrorBrush" Color="#F44336" />    <!-- Red for Dropped/Failed -->
-    <SolidColorBrush x:Key="TelemetryUnattributedBrush" Color="#9E9E9E" /> <!-- Gray for Unattributed -->
+    <CornerRadius x:Key="SurfaceCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="SmallCornerRadius">4</CornerRadius>
+    
+    <!-- TYPOGRAPHY TOKENS -->
+    <FontFamily x:Key="FontBrand">Segoe UI Variable Display, Segoe UI, sans-serif</FontFamily>
+    <FontFamily x:Key="FontBody">Segoe UI Variable Text, Segoe UI, sans-serif</FontFamily>
+    <FontFamily x:Key="FontMonospace">Cascadia Code, Consolas, Courier New, monospace</FontFamily>
 
-    <!-- Surface Hierarchy Tokens -->
-    <!-- WinUI 3 Default Layer brushes provide the exact correct Fluent surface colors -->
-    <StaticResource x:Key="CardBackgroundBrush" ResourceKey="LayerFillColorDefaultBrush" />
-    <StaticResource x:Key="CardBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-    <Thickness x:Key="CardBorderThickness">1</Thickness>
-    <CornerRadius x:Key="CardCornerRadius">8</CornerRadius>
-    <Thickness x:Key="CardPadding">20</Thickness>
-    <Thickness x:Key="CardMargin">0,0,0,16</Thickness>
+    <!-- TYPOGRAPHY STYLES -->
+    
+    <!-- Display -->
+    <Style x:Key="TypographyDisplay" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBrand}" />
+        <Setter Property="FontSize" Value="42" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource TextPrimaryBrush}" />
+    </Style>
 
-    <!-- Text Styles -->
-    <Style x:Key="DashboardHeaderStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource BrandFontFamily}" />
+    <!-- Page Title -->
+    <Style x:Key="TypographyPageTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBrand}" />
         <Setter Property="FontSize" Value="28" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TextPrimaryBrush}" />
         <Setter Property="Margin" Value="0,0,0,24" />
     </Style>
 
-    <Style x:Key="CardTitleStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource BrandFontFamily}" />
-        <Setter Property="FontSize" Value="16" />
+    <!-- Section Title -->
+    <Style x:Key="TypographySectionTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBrand}" />
+        <Setter Property="FontSize" Value="18" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TextSecondaryBrush}" />
         <Setter Property="Margin" Value="0,0,0,12" />
     </Style>
 
-    <Style x:Key="KpiValueStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource BrandFontFamily}" />
+    <!-- Metric / KPI Value -->
+    <Style x:Key="TypographyMetric" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBrand}" />
         <Setter Property="FontSize" Value="36" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TextPrimaryBrush}" />
     </Style>
 
-    <Style x:Key="KpiUnitStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource BodyFontFamily}" />
+    <!-- Data Value (for tables, numbers) -->
+    <Style x:Key="TypographyDataValue" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBody}" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}" />
-        <Setter Property="VerticalAlignment" Value="Bottom" />
-        <Setter Property="Margin" Value="4,0,0,6" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource TextPrimaryBrush}" />
     </Style>
+
+    <!-- Monospace Telemetry -->
+    <Style x:Key="TypographyTelemetryMonospace" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontMonospace}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{ThemeResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- Body -->
+    <Style x:Key="TypographyBody" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBody}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{ThemeResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- Secondary -->
+    <Style x:Key="TypographySecondary" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBody}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{ThemeResource TextSecondaryBrush}" />
+    </Style>
+
+    <!-- Caption -->
+    <Style x:Key="TypographyCaption" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontBody}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{ThemeResource TextSecondaryBrush}" />
+    </Style>
+
+    <!-- COMPONENT STYLES -->
     
-    <!-- Base Card Container Style -->
-    <Style x:Key="DashboardCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
-        <Setter Property="BorderThickness" Value="{StaticResource CardBorderThickness}" />
-        <Setter Property="CornerRadius" Value="{StaticResource CardCornerRadius}" />
-        <Setter Property="Padding" Value="{StaticResource CardPadding}" />
-        <Setter Property="Margin" Value="{StaticResource CardMargin}" />
+    <!-- Primary Surface (Dashboard Card) -->
+    <Style x:Key="SurfacePrimaryStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource SurfacePrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource SurfaceBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource SurfaceCornerRadius}" />
+        <Setter Property="Padding" Value="{StaticResource SpacingMedium}" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <!-- Elevated Surface (Tooltip / Flyout) -->
+    <Style x:Key="SurfaceElevatedStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource SurfaceElevatedBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource SurfaceBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource SurfaceCornerRadius}" />
+        <!-- Shadow effects are typically applied via Shadows in code or Composition API, but Border limits us. 
+             We rely on the Z-index and border to lift it visually -->
     </Style>
 
 </ResourceDictionary>
