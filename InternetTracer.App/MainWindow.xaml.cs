@@ -38,6 +38,9 @@ public sealed partial class MainWindow : Window
                 case "TrafficPage":
                     RootFrame.Navigate(typeof(TrafficPage));
                     break;
+                case "TrafficExplorerPage":
+                    RootFrame.Navigate(typeof(TrafficExplorerPage));
+                    break;
                 case "ApplicationsPage":
                     RootFrame.Navigate(typeof(ApplicationsPage));
                     break;

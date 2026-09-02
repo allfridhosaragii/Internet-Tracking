@@ -29,6 +29,11 @@
                 <!-- Primary Information Architecture -->
                 <NavigationViewItem Icon="Home" Content="Overview" Tag="DashboardPage" />
                 <NavigationViewItem Icon="Sync" Content="Traffic" Tag="TrafficPage" />
+                <NavigationViewItem Content="Traffic Explorer" Tag="TrafficExplorerPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE945;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Icon="List" Content="Applications" Tag="ApplicationsPage" />
                 <NavigationViewItem Icon="Globe" Content="Networks" Tag="NetworksPage" />
                 <NavigationViewItem Icon="Clock" Content="Sessions" Tag="SessionsPage" />

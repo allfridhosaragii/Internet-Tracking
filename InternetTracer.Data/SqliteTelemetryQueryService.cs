@@ -150,18 +150,84 @@ public class SqliteTelemetryQueryService : ITelemetryServiceApi
             .ToList();
     }
 
-    public Task<List<NetworkUsage>> GetNetworkUsageAsync(DateTime startUtc, DateTime endUtc)
+    public async Task<List<NetworkUsage>> GetNetworkUsageAsync(DateTime startUtc, DateTime endUtc)
     {
-        throw new NotImplementedException();
+        using var connection = _dbFactory.CreateConnection();
+        
+        var rows = await connection.QueryAsync<dynamic>(@"
+            SELECT network_id, 
+                   SUM(download_bytes) as DownloadBytes, 
+                   SUM(upload_bytes) as UploadBytes,
+                   SUM(download_bytes + upload_bytes) as TotalBytes
+            FROM traffic_minute
+            WHERE bucket_utc >= @Start AND bucket_utc <= @End AND network_id IS NOT NULL
+            GROUP BY network_id
+        ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o") });
+
+        var usageList = rows.Select(row => new NetworkUsage
+        {
+            NetworkId = row.network_id,
+            DisplayName = row.network_id,
+            TotalTraffic = new TrafficSnapshot
+            {
+                DownloadBytes = row.DownloadBytes ?? 0,
+                UploadBytes = row.UploadBytes ?? 0
+            }
+        }).ToList();
+
+        return usageList;
     }
 
-    public Task<ApplicationUsage> GetApplicationUsageAsync(string applicationId, DateTime startUtc, DateTime endUtc)
+    public async Task<ApplicationUsage> GetApplicationUsageAsync(string applicationId, DateTime startUtc, DateTime endUtc)
     {
-        throw new NotImplementedException();
+        using var connection = _dbFactory.CreateConnection();
+        
+        var appInfo = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
+            SELECT application_name, executable_path FROM applications WHERE application_id = @AppId", 
+            new { AppId = applicationId });
+
+        var timelineRows = await connection.QueryAsync<dynamic>(@"
+            SELECT bucket_utc, download_bytes, upload_bytes
+            FROM traffic_minute
+            WHERE bucket_utc >= @Start AND bucket_utc <= @End AND application_id = @AppId
+            ORDER BY bucket_utc ASC
+        ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o"), AppId = applicationId });
+
+        var totalDownload = 0L;
+        var totalUpload = 0L;
+        var timelinePoints = new System.Collections.Generic.List<TrafficTimelinePoint>();
+
+        foreach (var row in timelineRows)
+        {
+            totalDownload += row.download_bytes ?? 0;
+            totalUpload += row.upload_bytes ?? 0;
+            
+            timelinePoints.Add(new TrafficTimelinePoint
+            {
+                TimestampUtc = DateTime.Parse(row.bucket_utc),
+                DownloadBytes = row.download_bytes ?? 0,
+                UploadBytes = row.upload_bytes ?? 0
+            });
+        }
+
+        return new ApplicationUsage
+        {
+            ApplicationId = applicationId,
+            ApplicationName = appInfo?.application_name ?? applicationId,
+            ExecutablePath = appInfo?.executable_path ?? string.Empty,
+            TotalTraffic = new TrafficSnapshot
+            {
+                DownloadBytes = totalDownload,
+                UploadBytes = totalUpload
+            },
+            Timeline = new TrafficTimeline { Points = timelinePoints }
+        };
     }
 
-    public Task<List<ConnectionEvent>> GetConnectionEventsAsync(int limit)
+    public async Task<List<ConnectionEvent>> GetConnectionEventsAsync(int limit)
     {
-        throw new NotImplementedException();
+        // Connection events would typically come from a separate tracking mechanism
+        // For now, return empty list or mock data if available
+        return new List<ConnectionEvent>();
     }
 }

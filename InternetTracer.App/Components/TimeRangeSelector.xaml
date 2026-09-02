@@ -1,0 +1,34 @@
+<UserControl
+    x:Class="InternetTracer_App.Components.TimeRangeSelector"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:InternetTracer_App.ViewModels"
+    mc:Ignorable="d"
+    x:Name="UserControlRoot">
+
+    <StackPanel Orientation="Horizontal">
+        <Border Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="6" Padding="4" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+            <ItemsRepeater ItemsSource="{Binding DataContext.TimeRanges, ElementName=UserControlRoot}">
+                <ItemsRepeater.Layout>
+                    <StackLayout Orientation="Horizontal" Spacing="2" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TimeRangeOption">
+                        <Button Content="{Binding Name}" 
+                                Command="{Binding DataContext.SelectTimeRangeCommand, ElementName=UserControlRoot}"
+                                CommandParameter="{Binding Value}"
+                                Style="{StaticResource DefaultButtonStyle}"
+                                Margin="0"/>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </Border>
+        
+        <Button Content="Custom..." 
+                Style="{StaticResource AccentButtonStyle}"
+                Margin="8,0,0,0" />
+    </StackPanel>
+
+</UserControl>
