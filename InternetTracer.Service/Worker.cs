@@ -14,6 +14,7 @@ public class Worker : BackgroundService
     private readonly TrafficDeltaCalculator _deltaCalculator;
     private readonly MinuteAggregator _minuteAggregator;
     private readonly IpcServer _ipcServer;
+    private readonly LiveTelemetryBuffer _liveBuffer;
     private EtwKernelTraceMonitor? _etwMonitor;
 
     private readonly ConcurrentDictionary<int, (long rx, long tx)> _pidAccumulators = new();
@@ -23,12 +24,14 @@ public class Worker : BackgroundService
         WindowsNetworkInterfaceMonitor interfaceMonitor,
         TrafficDeltaCalculator deltaCalculator, 
         MinuteAggregator minuteAggregator,
+        LiveTelemetryBuffer liveBuffer,
         IpcServer ipcServer)
     {
         _logger = logger;
         _interfaceMonitor = interfaceMonitor;
         _deltaCalculator = deltaCalculator;
         _minuteAggregator = minuteAggregator;
+        _liveBuffer = liveBuffer;
         _ipcServer = ipcServer;
     }
 
@@ -138,6 +141,17 @@ public class Worker : BackgroundService
                     }
                 }
                 
+                // Track total 1-second snapshot for live telemetry
+                long totalTickRx = deltas.Sum(d => d.BytesReceived);
+                long totalTickTx = deltas.Sum(d => d.BytesSent);
+                
+                _liveBuffer.AddSnapshot(new TrafficSample 
+                {
+                    TimestampUtc = DateTime.UtcNow,
+                    BytesReceived = totalTickRx,
+                    BytesSent = totalTickTx
+                });
+
                 // Flush memory to SQLite for items older than 2 minutes
                 await _minuteAggregator.FlushOlderThanAsync(DateTime.UtcNow.AddMinutes(-2));
             }

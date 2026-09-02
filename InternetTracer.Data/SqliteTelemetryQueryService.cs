@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 public class SqliteTelemetryQueryService : ITelemetryServiceApi
 {
     private readonly DatabaseFactory _dbFactory;
-    private readonly Func<CurrentSnapshot> _liveSnapshotProvider;
+    private readonly LiveTelemetryBuffer _liveBuffer;
 
-    public SqliteTelemetryQueryService(DatabaseFactory dbFactory, Func<CurrentSnapshot> liveSnapshotProvider)
+    public SqliteTelemetryQueryService(DatabaseFactory dbFactory, LiveTelemetryBuffer liveBuffer)
     {
         _dbFactory = dbFactory;
-        _liveSnapshotProvider = liveSnapshotProvider;
+        _liveBuffer = liveBuffer;
     }
 
     public async Task<DashboardSummary> GetDashboardSummaryAsync()
@@ -60,7 +60,7 @@ public class SqliteTelemetryQueryService : ITelemetryServiceApi
 
     public Task<CurrentSnapshot> GetCurrentSnapshotAsync()
     {
-        return Task.FromResult(_liveSnapshotProvider());
+        return Task.FromResult(_liveBuffer.GetCurrentSnapshot());
     }
 
     public Task<ConnectionQuality> GetConnectionQualityAsync()
@@ -71,7 +71,12 @@ public class SqliteTelemetryQueryService : ITelemetryServiceApi
 
     public async Task<TrafficTimeline> GetTrafficTimelineAsync(DateTime startUtc, DateTime endUtc, string resolution)
     {
-        // Simplistic timeline just pulling minutes. For hour/day resolution, SQLite strftime grouping is required.
+        var totalSecs = (endUtc - startUtc).TotalSeconds;
+        if (totalSecs <= 120 && resolution == "1s")
+        {
+            return _liveBuffer.GetTimeline(startUtc, endUtc);
+        }
+
         using var connection = _dbFactory.CreateConnection();
         var rows = await connection.QueryAsync<dynamic>(@"
             SELECT bucket_utc, SUM(download_bytes) as Download, SUM(upload_bytes) as Upload

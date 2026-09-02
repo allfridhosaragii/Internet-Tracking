@@ -18,17 +18,19 @@ builder.Services.AddSingleton<SchemaMigrationEngine>();
 builder.Services.AddSingleton<MinuteAggregator>();
 builder.Services.AddSingleton<WindowsNetworkInterfaceMonitor>();
 builder.Services.AddSingleton<TrafficDeltaCalculator>();
+builder.Services.AddSingleton<LiveTelemetryBuffer>();
 
 // Provide live snapshot from the DeltaCalculator (or keep it simple for now)
-builder.Services.AddSingleton<InternetTracer.Core.Contracts.ITelemetryServiceApi>(sp => 
+builder.Services.AddSingleton<ITelemetryServiceApi>(sp => 
 {
     var dbFactory = sp.GetRequiredService<DatabaseFactory>();
-    return new SqliteTelemetryQueryService(dbFactory, () => new InternetTracer.Core.Contracts.CurrentSnapshot());
+    var liveBuffer = sp.GetRequiredService<LiveTelemetryBuffer>();
+    return new SqliteTelemetryQueryService(dbFactory, liveBuffer);
 });
 
 builder.Services.AddSingleton<IpcServer>(sp => 
 {
-    var api = sp.GetRequiredService<InternetTracer.Core.Contracts.ITelemetryServiceApi>();
+    var api = sp.GetRequiredService<ITelemetryServiceApi>();
     // Fast-path: authorize current user (which is the one running the service, but wait, Service runs as LocalSystem. We need to pass the Interactive User SID or rely on BuiltinAdministratorsSid logic).
     // Fast-path: authorize current user (which is the one running the service/test).
     var userSid = System.Security.Principal.WindowsIdentity.GetCurrent().User;

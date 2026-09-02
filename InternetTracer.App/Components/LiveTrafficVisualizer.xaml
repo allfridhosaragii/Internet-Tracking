@@ -13,10 +13,10 @@
         <Line x:Name="ZeroLine" X1="0" Y1="120" X2="100" Y2="120" Stroke="{ThemeResource SurfaceBorderBrush}" StrokeThickness="1" />
         
         <!-- Max Values text -->
-        <TextBlock x:Name="MaxDownloadText" Text="0 MB/s" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TelemetryDownloadBrush}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0" />
-        <TextBlock x:Name="MaxUploadText" Text="0 MB/s" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TelemetryUploadBrush}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,20,8,0" />
+        <TextBlock x:Name="MaxDownloadText" Text="0 MB/s" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TelemetryDownloadBrush}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0" AutomationProperties.Name="Maximum Download Speed" />
+        <TextBlock x:Name="MaxUploadText" Text="0 MB/s" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TelemetryUploadBrush}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,20,8,0" AutomationProperties.Name="Maximum Upload Speed" />
 
-        <Canvas x:Name="ChartCanvas">
+        <Canvas x:Name="ChartCanvas" AutomationProperties.Name="Live Traffic Graph">
             <!-- Upload Graph (drawn first, in background) -->
             <Polygon x:Name="UploadPolygon" Fill="{ThemeResource TelemetryUploadBrush}" Opacity="0.5" />
             <Polyline x:Name="UploadLine" Stroke="{ThemeResource TelemetryUploadBrush}" StrokeThickness="2" />
