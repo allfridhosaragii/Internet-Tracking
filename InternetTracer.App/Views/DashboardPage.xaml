@@ -132,11 +132,8 @@
                             <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
                                        Style="{StaticResource TypographyDisplay}" 
                                        Foreground="{ThemeResource TelemetryDownloadBrush}"/>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,6">
-                                <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
-                                           Style="{StaticResource TypographySecondary}" />
-                                <TextBlock Text="/s" Style="{StaticResource TypographySecondary}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
+                                       Style="{StaticResource TypographySecondary}" VerticalAlignment="Bottom" Margin="0,0,0,6" />
                         </StackPanel>
                     </StackPanel>
                     
@@ -146,11 +143,8 @@
                             <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
                                        Style="{StaticResource TypographyDisplay}" 
                                        Foreground="{ThemeResource TelemetryUploadBrush}"/>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,6">
-                                <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
-                                           Style="{StaticResource TypographySecondary}" />
-                                <TextBlock Text="/s" Style="{StaticResource TypographySecondary}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
+                                       Style="{StaticResource TypographySecondary}" VerticalAlignment="Bottom" Margin="0,0,0,6" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -188,10 +182,7 @@
                             <TextBlock Grid.Column="4" Text="STATUS" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" />
                         </Grid>
 
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Summary.TopApplications, Mode=OneWay}">
-                            <ItemsRepeater.ItemTransitionProvider>
-                                <LinedFlowLayoutItemCollectionTransitionProvider />
-                            </ItemsRepeater.ItemTransitionProvider>
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopApps, Mode=OneWay}">
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="core:TopUsageEntry">
                                     <Grid Margin="0,8">
@@ -207,33 +198,33 @@
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
                                             <FontIcon Glyph="&#xE718;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{x:Bind DisplayName}" Style="{StaticResource TypographyDataValue}" FontWeight="SemiBold" />
-                                                <TextBlock Text="{x:Bind ProcessName}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" Style="{StaticResource TypographyDataValue}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{x:Bind ProcessName, Mode=OneWay}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             </StackPanel>
                                         </StackPanel>
                                         
                                         <!-- Download -->
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                             <FontIcon Glyph="&#xE896;" FontSize="10" Foreground="{ThemeResource TelemetryDownloadBrush}" />
-                                            <TextBlock Text="{x:Bind DownloadBytes, Converter={StaticResource ByteValueConverter}}" Style="{StaticResource TypographyDataValue}" />
-                                            <TextBlock Text="{x:Bind DownloadBytes, Converter={StaticResource ByteVolumeUnitConverter}}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind DownloadBytes, Converter={StaticResource ByteValueConverter}, Mode=OneWay}" Style="{StaticResource TypographyDataValue}" />
+                                            <TextBlock Text="{x:Bind DownloadBytes, Converter={StaticResource ByteVolumeUnitConverter}, Mode=OneWay}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         </StackPanel>
 
                                         <!-- Upload -->
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                             <FontIcon Glyph="&#xE898;" FontSize="10" Foreground="{ThemeResource TelemetryUploadBrush}" />
-                                            <TextBlock Text="{x:Bind UploadBytes, Converter={StaticResource ByteValueConverter}}" Style="{StaticResource TypographyDataValue}" />
-                                            <TextBlock Text="{x:Bind UploadBytes, Converter={StaticResource ByteVolumeUnitConverter}}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind UploadBytes, Converter={StaticResource ByteValueConverter}, Mode=OneWay}" Style="{StaticResource TypographyDataValue}" />
+                                            <TextBlock Text="{x:Bind UploadBytes, Converter={StaticResource ByteVolumeUnitConverter}, Mode=OneWay}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         </StackPanel>
                                         
                                         <!-- Total -->
                                         <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                            <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteValueConverter}}" Style="{StaticResource TypographyDataValue}" />
-                                            <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteVolumeUnitConverter}}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteValueConverter}, Mode=OneWay}" Style="{StaticResource TypographyDataValue}" />
+                                            <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteVolumeUnitConverter}, Mode=OneWay}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         </StackPanel>
 
                                         <!-- Status -->
-                                        <TextBlock Grid.Column="4" Text="{x:Bind AttributionState}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="4" Text="{x:Bind AttributionState, Mode=OneWay}" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                     </Grid>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>

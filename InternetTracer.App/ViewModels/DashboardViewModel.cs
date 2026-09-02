@@ -13,6 +13,8 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private DashboardSummary _summary = new DashboardSummary { TodayTraffic = new InternetTracer.Core.Contracts.TrafficSnapshot(), TopApplications = new System.Collections.Generic.List<InternetTracer.Core.Contracts.TopUsageEntry>() };
 
+    public System.Collections.ObjectModel.ObservableCollection<InternetTracer.Core.Contracts.TopUsageEntry> TopApps { get; } = new();
+
     [ObservableProperty]
     private CurrentSnapshot _snapshot = new CurrentSnapshot();
 
@@ -67,6 +69,15 @@ public partial class DashboardViewModel : ObservableObject
 
             Summary = await _telemetryService.GetDashboardSummaryAsync();
             Quality = await _telemetryService.GetConnectionQualityAsync();
+
+            TopApps.Clear();
+            if (Summary?.TopApplications != null)
+            {
+                foreach (var app in Summary.TopApplications)
+                {
+                    TopApps.Add(app);
+                }
+            }
 
             var endUtc = DateTime.UtcNow;
             var startUtc = endUtc.AddSeconds(-60);
@@ -140,6 +151,47 @@ public partial class DashboardViewModel : ObservableObject
                 
                 var endUtc = DateTime.UtcNow;
                 var startUtc = endUtc.AddSeconds(-60);
+                
+                var newSummary = await _telemetryService.GetDashboardSummaryAsync();
+                Summary = newSummary;
+
+                if (newSummary?.TopApplications != null)
+                {
+                    // Update TopApps properties in place to prevent UI flickering / item replacement animations in ItemsRepeater
+                    for (int i = 0; i < newSummary.TopApplications.Count; i++)
+                    {
+                        var newApp = newSummary.TopApplications[i];
+                        if (i < TopApps.Count)
+                        {
+                            var existingApp = TopApps[i];
+                            // If it's a completely different app in this slot, replace it
+                            if (existingApp.EntityId != newApp.EntityId)
+                            {
+                                TopApps[i] = newApp;
+                            }
+                            else
+                            {
+                                // Otherwise mutate properties so INotifyPropertyChanged updates UI bindings
+                                existingApp.DownloadBytes = newApp.DownloadBytes;
+                                existingApp.UploadBytes = newApp.UploadBytes;
+                                existingApp.TotalBytes = newApp.TotalBytes;
+                                existingApp.DisplayName = newApp.DisplayName;
+                                existingApp.ProcessName = newApp.ProcessName;
+                                existingApp.AttributionState = newApp.AttributionState;
+                            }
+                        }
+                        else
+                        {
+                            TopApps.Add(newApp);
+                        }
+                    }
+                    // Remove any excess items if the list shrunk
+                    while (TopApps.Count > newSummary.TopApplications.Count)
+                    {
+                        TopApps.RemoveAt(TopApps.Count - 1);
+                    }
+                }
+
                 var newTimeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, "1s");
                 Timeline = newTimeline;
 

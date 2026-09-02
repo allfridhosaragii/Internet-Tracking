@@ -20,13 +20,19 @@
         <TextBlock x:Name="MaxUploadText" Text="0 MB/s" Style="{StaticResource TypographyCaption}" Foreground="{ThemeResource TelemetryUploadBrush}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,20,8,0" AutomationProperties.Name="Maximum Upload Speed" />
 
         <Canvas x:Name="ChartCanvas" AutomationProperties.Name="Live Traffic Graph">
-            <!-- Polygons (Fill) replaced by Paths -->
-            <Path x:Name="DownloadPath" Fill="{ThemeResource TelemetryDownloadBrush}" Opacity="0.2" StrokeThickness="0" />
-            <Path x:Name="UploadPath" Fill="{ThemeResource TelemetryUploadBrush}" Opacity="0.2" StrokeThickness="0" />
+            <!-- Sliding Canvas for the curves -->
+            <Canvas x:Name="PathsCanvas">
+                <Canvas.RenderTransform>
+                    <TranslateTransform x:Name="ChartTranslate" />
+                </Canvas.RenderTransform>
+                <!-- Polygons (Fill) replaced by Paths -->
+                <Path x:Name="DownloadPath" Fill="{ThemeResource TelemetryDownloadBrush}" Opacity="0.2" StrokeThickness="0" />
+                <Path x:Name="UploadPath" Fill="{ThemeResource TelemetryUploadBrush}" Opacity="0.2" StrokeThickness="0" />
 
-            <!-- Lines (Stroke) replaced by Paths -->
-            <Path x:Name="DownloadLinePath" Stroke="{ThemeResource TelemetryDownloadBrush}" StrokeThickness="2" StrokeLineJoin="Round" />
-            <Path x:Name="UploadLinePath" Stroke="{ThemeResource TelemetryUploadBrush}" StrokeThickness="2" StrokeLineJoin="Round" />
+                <!-- Lines (Stroke) replaced by Paths -->
+                <Path x:Name="DownloadLinePath" Stroke="{ThemeResource TelemetryDownloadBrush}" StrokeThickness="2" StrokeLineJoin="Round" />
+                <Path x:Name="UploadLinePath" Stroke="{ThemeResource TelemetryUploadBrush}" StrokeThickness="2" StrokeLineJoin="Round" />
+            </Canvas>
             
             <!-- Tooltip Overlay -->
             <Canvas x:Name="TooltipCanvas" IsHitTestVisible="False">

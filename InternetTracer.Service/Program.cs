@@ -25,7 +25,8 @@ builder.Services.AddSingleton<InternetTracer.Core.Contracts.ITelemetryServiceApi
 {
     var dbFactory = sp.GetRequiredService<DatabaseFactory>();
     var liveBuffer = sp.GetRequiredService<LiveTelemetryBuffer>();
-    return new SqliteTelemetryQueryService(dbFactory, liveBuffer);
+    var minAgg = sp.GetRequiredService<MinuteAggregator>();
+    return new SqliteTelemetryQueryService(dbFactory, liveBuffer, minAgg);
 });
 
 builder.Services.AddSingleton<IpcServer>(sp => 

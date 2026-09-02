@@ -27,6 +27,54 @@ public class MinuteAggregator
         bag.Add(sample);
     }
 
+    public List<InternetTracer.Core.Contracts.TopUsageEntry> GetUnflushedAppVolumes()
+    {
+        var result = new Dictionary<string, InternetTracer.Core.Contracts.TopUsageEntry>();
+        
+        foreach (var bag in _buckets.Values)
+        {
+            var samples = bag.ToList(); // Thread-safe snapshot of the bag
+            foreach (var s in samples)
+            {
+                if (string.IsNullOrEmpty(s.ApplicationId)) continue;
+                
+                if (!result.TryGetValue(s.ApplicationId, out var entry))
+                {
+                    entry = new InternetTracer.Core.Contracts.TopUsageEntry
+                    {
+                        EntityId = s.ApplicationId,
+                        DisplayName = s.ApplicationId,
+                        ProcessName = s.ApplicationId,
+                        AttributionState = "Attributed"
+                    };
+                    result[s.ApplicationId] = entry;
+                }
+                
+                entry.DownloadBytes += s.BytesReceived;
+                entry.UploadBytes += s.BytesSent;
+                entry.TotalBytes += (s.BytesReceived + s.BytesSent);
+            }
+        }
+        
+        return result.Values.ToList();
+    }
+
+    public (long Download, long Upload) GetUnflushedTotalVolume()
+    {
+        long dl = 0;
+        long ul = 0;
+        foreach (var bag in _buckets.Values)
+        {
+            var samples = bag.ToList();
+            foreach (var s in samples)
+            {
+                dl += s.BytesReceived;
+                ul += s.BytesSent;
+            }
+        }
+        return (dl, ul);
+    }
+
     // Flushes all buckets that are strictly older than the specified current UTC time.
     public async Task FlushOlderThanAsync(DateTime currentUtc)
     {

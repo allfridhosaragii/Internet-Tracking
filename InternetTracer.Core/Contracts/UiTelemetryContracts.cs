@@ -39,15 +39,58 @@ public class CurrentSnapshot
     public int ActiveConnections { get; set; }
 }
 
-public class TopUsageEntry
+public class TopUsageEntry : System.ComponentModel.INotifyPropertyChanged
 {
-    public string EntityId { get; set; } = string.Empty; // App ID or Network ID
-    public string DisplayName { get; set; } = string.Empty;
-    public string ProcessName { get; set; } = string.Empty;
-    public long DownloadBytes { get; set; }
-    public long UploadBytes { get; set; }
-    public long TotalBytes { get; set; }
-    public string AttributionState { get; set; } = "Attributed";
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    private string _entityId = string.Empty;
+    public string EntityId 
+    { 
+        get => _entityId; 
+        set { if (_entityId != value) { _entityId = value; PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(EntityId))); } } 
+    }
+
+    private string _displayName = string.Empty;
+    public string DisplayName 
+    { 
+        get => _displayName; 
+        set { if (_displayName != value) { _displayName = value; PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(DisplayName))); } } 
+    }
+
+    private string _processName = string.Empty;
+    public string ProcessName 
+    { 
+        get => _processName; 
+        set { if (_processName != value) { _processName = value; PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(ProcessName))); } } 
+    }
+
+    private long _downloadBytes;
+    public long DownloadBytes 
+    { 
+        get => _downloadBytes; 
+        set { if (_downloadBytes != value) { _downloadBytes = value; PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(DownloadBytes))); } } 
+    }
+
+    private long _uploadBytes;
+    public long UploadBytes 
+    { 
+        get => _uploadBytes; 
+        set { if (_uploadBytes != value) { _uploadBytes = value; PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(UploadBytes))); } } 
+    }
+
+    private long _totalBytes;
+    public long TotalBytes 
+    { 
+        get => _totalBytes; 
+        set { if (_totalBytes != value) { _totalBytes = value; PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(TotalBytes))); } } 
+    }
+
+    private string _attributionState = "Attributed";
+    public string AttributionState 
+    { 
+        get => _attributionState; 
+        set { if (_attributionState != value) { _attributionState = value; PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(AttributionState))); } } 
+    }
 }
 
 public class TrafficTimeline
