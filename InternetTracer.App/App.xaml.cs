@@ -45,6 +45,14 @@ public partial class App : Application
     {
         InitializeComponent();
         Services = ConfigureServices();
+        
+        this.UnhandledException += (s, e) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"Unhandled exception: {e.Exception.Message}");
+            System.Diagnostics.Debug.WriteLine(e.Exception.StackTrace);
+            System.IO.File.WriteAllText("p:\\Internet Tracer\\crash.txt", $"{e.Exception.Message}\n{e.Exception.StackTrace}");
+            e.Handled = true;
+        };
     }
 
     private static IServiceProvider ConfigureServices()

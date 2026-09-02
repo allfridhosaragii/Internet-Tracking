@@ -80,12 +80,12 @@
                     
                     <!-- Freshness Indicator -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                        <Ellipse Width="10" Height="10" Fill="{ThemeResource TelemetryDownloadBrush}">
+                        <Ellipse x:Name="PulseIndicator" Width="10" Height="10" Fill="{ThemeResource TelemetryDownloadBrush}">
                             <Ellipse.Triggers>
-                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
                                     <BeginStoryboard>
                                         <Storyboard RepeatBehavior="Forever">
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:1" AutoReverse="True"/>
+                                            <DoubleAnimation Storyboard.TargetName="PulseIndicator" Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:1" AutoReverse="True"/>
                                         </Storyboard>
                                     </BeginStoryboard>
                                 </EventTrigger>

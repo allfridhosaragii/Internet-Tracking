@@ -39,6 +39,7 @@ public sealed partial class LiveTrafficVisualizer : UserControl
 
     private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
     {
+        if (ZeroLine == null) return;
         ZeroLine.Y1 = e.NewSize.Height;
         ZeroLine.Y2 = e.NewSize.Height;
         ZeroLine.X2 = e.NewSize.Width;
@@ -47,14 +48,14 @@ public sealed partial class LiveTrafficVisualizer : UserControl
 
     private void RedrawChart()
     {
-        if (Timeline == null || Timeline.Points.Count < 2 || ChartCanvas.ActualWidth == 0 || ChartCanvas.ActualHeight == 0)
+        if (Timeline == null || Timeline.Points.Count < 2 || ChartCanvas == null || ChartCanvas.ActualWidth == 0 || ChartCanvas.ActualHeight == 0)
         {
-            DownloadPolygon.Points.Clear();
-            DownloadLine.Points.Clear();
-            UploadPolygon.Points.Clear();
-            UploadLine.Points.Clear();
-            MaxDownloadText.Text = "DL: 0 B/s";
-            MaxUploadText.Text = "UL: 0 B/s";
+            if (DownloadPolygon != null) DownloadPolygon.Points.Clear();
+            if (DownloadLine != null) DownloadLine.Points.Clear();
+            if (UploadPolygon != null) UploadPolygon.Points.Clear();
+            if (UploadLine != null) UploadLine.Points.Clear();
+            if (MaxDownloadText != null) MaxDownloadText.Text = "DL: 0 B/s";
+            if (MaxUploadText != null) MaxUploadText.Text = "UL: 0 B/s";
             return;
         }
 

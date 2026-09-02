@@ -43,6 +43,13 @@ public class IpcServer
                 // Implement strict ACL: Only the specific authorized user and Admins can connect.
                 PipeSecurity pipeSecurity = new PipeSecurity();
                 
+                // Grant FullControl to the creator (Service) so it can actually create the pipe
+                var currentUser = WindowsIdentity.GetCurrent().User;
+                if (currentUser != null)
+                {
+                    pipeSecurity.AddAccessRule(new PipeAccessRule(currentUser, PipeAccessRights.FullControl, AccessControlType.Allow));
+                }
+                
                 var adminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
                 pipeSecurity.AddAccessRule(new PipeAccessRule(adminSid, PipeAccessRights.ReadWrite, AccessControlType.Allow));
                 

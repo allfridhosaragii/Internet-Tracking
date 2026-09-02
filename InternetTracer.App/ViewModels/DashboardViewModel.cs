@@ -11,13 +11,13 @@ public partial class DashboardViewModel : ObservableObject
 
 #pragma warning disable MVVMTK0045 // WinRT AOT warning
     [ObservableProperty]
-    private DashboardSummary? _summary;
+    private DashboardSummary _summary = new DashboardSummary { TodayTraffic = new InternetTracer.Core.Contracts.TrafficSnapshot(), TopApplications = new System.Collections.Generic.List<InternetTracer.Core.Contracts.TopUsageEntry>() };
 
     [ObservableProperty]
-    private CurrentSnapshot? _snapshot;
+    private CurrentSnapshot _snapshot = new CurrentSnapshot();
 
     [ObservableProperty]
-    private ConnectionQuality? _quality;
+    private ConnectionQuality _quality = new ConnectionQuality { Status = "Loading..." };
 
     [ObservableProperty]
     private DashboardLoadState _loadState = DashboardLoadState.Loading;

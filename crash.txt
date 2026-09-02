@@ -1,0 +1,13 @@
+Value does not fall within the expected range.
+   at WinRT.ExceptionHelpers.<ThrowExceptionForHR>g__Throw|38_0(Int32 hr)
+   at WinRT.ExceptionHelpers.ThrowExceptionForHR(Int32 hr)
+   at ABI.Microsoft.UI.Xaml.Controls.IContentPresenterMethods.set_Content(IObjectReference _obj, Object value)
+   at Microsoft.UI.Xaml.Controls.ContentPresenter.set_Content(Object value)
+   at InternetTracer_App.Components.DataStateContainer.XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentPresenter_Content(ContentPresenter obj, Object value, String targetNullValue)
+   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Update_Content(UIElement obj, Int32 phase)
+   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Update_(DataStateContainer obj, Int32 phase)
+   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Update()
+   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Initialize()
+   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Loading(FrameworkElement src, Object data)
+   at WinRT._EventSource_global__Windows_Foundation_TypedEventHandler_global__Microsoft_UI_Xaml_FrameworkElement__object_.EventState.<GetEventInvoke>b__1_0(FrameworkElement sender, Object args)
+   at WinRT.GenericTypeInstantiations.Windows_Foundation_TypedEventHandler_2_Microsoft_UI_Xaml_FrameworkElement__object.Do_Abi_Invoke(IntPtr thisPtr, IntPtr sender, IntPtr args)

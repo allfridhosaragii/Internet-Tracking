@@ -11,8 +11,8 @@ public sealed partial class DashboardPage : Page
 
     public DashboardPage()
     {
-        this.InitializeComponent();
         ViewModel = App.Current.Services.GetRequiredService<DashboardViewModel>();
+        this.InitializeComponent();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
