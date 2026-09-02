@@ -16,4 +16,12 @@ public interface ITelemetryServiceApi
     Task<List<ConnectionEvent>> GetConnectionEventsAsync(int limit);
     Task<ConnectionQuality> GetConnectionQualityAsync();
     Task<CurrentSnapshot> GetCurrentSnapshotAsync();
+    
+    // K16 Phase 4: Filtering and Search Support
+    Task<List<string>> GetUniqueApplicationIdsAsync(DateTime startUtc, DateTime endUtc);
+    Task<List<string>> GetUniqueNetworkIdsAsync(DateTime startUtc, DateTime endUtc);
+    Task<List<TopUsageEntry>> GetTopApplicationsFilteredAsync(DateTime startUtc, DateTime endUtc, int limit, string? appId);
+    Task<List<TopUsageEntry>> GetTopApplicationsSortedAsync(DateTime startUtc, DateTime endUtc, int limit, string sortBy, bool descending);
+    Task<List<NetworkUsage>> GetNetworkUsageFilteredAsync(DateTime startUtc, DateTime endUtc, string? networkId);
+    Task<List<TopUsageEntry>> SearchApplicationsAsync(DateTime startUtc, DateTime endUtc, string searchTerm, int limit);
 }

@@ -226,8 +226,212 @@ public class SqliteTelemetryQueryService : ITelemetryServiceApi
 
     public async Task<List<ConnectionEvent>> GetConnectionEventsAsync(int limit)
     {
-        // Connection events would typically come from a separate tracking mechanism
-        // For now, return empty list or mock data if available
+        // Connection events deferred to K17 Sessions Page feature
+        // Requires network session tracking infrastructure not yet built
         return new List<ConnectionEvent>();
     }
+
+    #region Filtering Support Methods (K16 Phase 4)
+
+    /// <summary>
+    /// Returns all unique application IDs for a time range (for filter dropdown).
+    /// </summary>
+    public async Task<List<string>> GetUniqueApplicationIdsAsync(DateTime startUtc, DateTime endUtc)
+    {
+        using var connection = _dbFactory.CreateConnection();
+        var rows = await connection.QueryAsync<string>(@"
+            SELECT DISTINCT application_id 
+            FROM traffic_minute
+            WHERE bucket_utc >= @Start AND bucket_utc <= @End AND application_id IS NOT NULL
+            ORDER BY application_id ASC
+        ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o") });
+
+        return rows.ToList();
+    }
+
+    /// <summary>
+    /// Returns top applications filtered by specific application ID.
+    /// If appId is null, returns "All Applications" (attributed only).
+    /// </summary>
+    public async Task<List<TopUsageEntry>> GetTopApplicationsFilteredAsync(DateTime startUtc, DateTime endUtc, int limit, string? appId)
+    {
+        using var connection = _dbFactory.CreateConnection();
+        
+        if (string.IsNullOrEmpty(appId))
+        {
+            // No filter - return all attributed traffic
+            var rows = await connection.QueryAsync<TopUsageEntry>(@"
+                SELECT 
+                    application_id as EntityId, 
+                    application_id as DisplayName, 
+                    application_id as ProcessName,
+                    SUM(download_bytes) as DownloadBytes,
+                    SUM(upload_bytes) as UploadBytes,
+                    SUM(download_bytes + upload_bytes) as TotalBytes
+                FROM traffic_minute
+                WHERE bucket_utc >= @Start AND bucket_utc <= @End AND application_id IS NOT NULL
+                GROUP BY application_id
+                ORDER BY TotalBytes DESC
+            ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o") });
+            
+            return rows.Take(limit).ToList();
+        }
+        else
+        {
+            // Specific application filter
+            var rows = await connection.QueryAsync<TopUsageEntry>(@"
+                SELECT 
+                    application_id as EntityId, 
+                    application_id as DisplayName, 
+                    application_id as ProcessName,
+                    SUM(download_bytes) as DownloadBytes,
+                    SUM(upload_bytes) as UploadBytes,
+                    SUM(download_bytes + upload_bytes) as TotalBytes
+                FROM traffic_minute
+                WHERE bucket_utc >= @Start AND bucket_utc <= @End AND application_id = @AppId
+                GROUP BY application_id
+                ORDER BY TotalBytes DESC
+            ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o"), AppId = appId });
+            
+            return rows.Take(limit).ToList();
+        }
+    }
+
+    /// <summary>
+    /// Returns top applications sorted by specified field.
+    /// </summary>
+    public async Task<List<TopUsageEntry>> GetTopApplicationsSortedAsync(DateTime startUtc, DateTime endUtc, int limit, string sortBy, bool descending)
+    {
+        using var connection = _dbFactory.CreateConnection();
+        
+        var sortField = ValidateSortField(sortBy);
+        var orderDir = descending ? "DESC" : "ASC";
+
+        var rows = await connection.QueryAsync<TopUsageEntry>(@$"
+            SELECT 
+                application_id as EntityId, 
+                application_id as DisplayName, 
+                application_id as ProcessName,
+                SUM(download_bytes) as DownloadBytes,
+                SUM(upload_bytes) as UploadBytes,
+                SUM(download_bytes + upload_bytes) as TotalBytes
+            FROM traffic_minute
+            WHERE bucket_utc >= @Start AND bucket_utc <= @End AND application_id IS NOT NULL
+            GROUP BY application_id
+            ORDER BY {sortField} {orderDir}
+        ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o") });
+
+        return rows.Take(limit).ToList();
+    }
+
+    private static string ValidateSortField(string sortBy)
+    {
+        var validFields = new[] { "TotalBytes", "DownloadBytes", "UploadBytes", "DisplayName" };
+        return validFields.Contains(sortBy) ? sortBy : "TotalBytes";
+    }
+
+    /// <summary>
+    /// Returns unique network IDs for a time range (for filter dropdown).
+    /// </summary>
+    public async Task<List<string>> GetUniqueNetworkIdsAsync(DateTime startUtc, DateTime endUtc)
+    {
+        using var connection = _dbFactory.CreateConnection();
+        var rows = await connection.QueryAsync<string>(@"
+            SELECT DISTINCT network_id 
+            FROM traffic_minute
+            WHERE bucket_utc >= @Start AND bucket_utc <= @End AND network_id IS NOT NULL
+            ORDER BY network_id ASC
+        ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o") });
+
+        return rows.ToList();
+    }
+
+    /// <summary>
+    /// Returns network usage filtered by specific network ID.
+    /// </summary>
+    public async Task<List<NetworkUsage>> GetNetworkUsageFilteredAsync(DateTime startUtc, DateTime endUtc, string? networkId)
+    {
+        using var connection = _dbFactory.CreateConnection();
+        
+        if (string.IsNullOrEmpty(networkId))
+        {
+            // No filter - return all networks
+            var rows = await connection.QueryAsync<dynamic>(@"
+                SELECT network_id, 
+                       SUM(download_bytes) as DownloadBytes, 
+                       SUM(upload_bytes) as UploadBytes,
+                       SUM(download_bytes + upload_bytes) as TotalBytes
+                FROM traffic_minute
+                WHERE bucket_utc >= @Start AND bucket_utc <= @End AND network_id IS NOT NULL
+                GROUP BY network_id
+                ORDER BY TotalBytes DESC
+            ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o") });
+
+            return rows.Select(row => new NetworkUsage
+            {
+                NetworkId = row.network_id,
+                DisplayName = row.network_id,
+                TotalTraffic = new TrafficSnapshot
+                {
+                    DownloadBytes = row.DownloadBytes ?? 0,
+                    UploadBytes = row.UploadBytes ?? 0
+                }
+            }).ToList();
+        }
+        else
+        {
+            // Specific network filter
+            var rows = await connection.QueryAsync<dynamic>(@"
+                SELECT network_id, 
+                       SUM(download_bytes) as DownloadBytes, 
+                       SUM(upload_bytes) as UploadBytes,
+                       SUM(download_bytes + upload_bytes) as TotalBytes
+                FROM traffic_minute
+                WHERE bucket_utc >= @Start AND bucket_utc <= @End AND network_id = @NetId
+                GROUP BY network_id
+                ORDER BY TotalBytes DESC
+            ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o"), NetId = networkId });
+
+            return rows.Select(row => new NetworkUsage
+            {
+                NetworkId = row.network_id,
+                DisplayName = row.network_id,
+                TotalTraffic = new TrafficSnapshot
+                {
+                    DownloadBytes = row.DownloadBytes ?? 0,
+                    UploadBytes = row.UploadBytes ?? 0
+                }
+            }).ToList();
+        }
+    }
+
+    /// <summary>
+    /// Searches for applications by name pattern (case-insensitive).
+    /// </summary>
+    public async Task<List<TopUsageEntry>> SearchApplicationsAsync(DateTime startUtc, DateTime endUtc, string searchTerm, int limit)
+    {
+        using var connection = _dbFactory.CreateConnection();
+        
+        var searchPattern = $"%{searchTerm}%";
+        
+        var rows = await connection.QueryAsync<TopUsageEntry>(@"
+            SELECT 
+                application_id as EntityId, 
+                application_id as DisplayName, 
+                application_id as ProcessName,
+                SUM(download_bytes) as DownloadBytes,
+                SUM(upload_bytes) as UploadBytes,
+                SUM(download_bytes + upload_bytes) as TotalBytes
+            FROM traffic_minute
+            WHERE bucket_utc >= @Start AND bucket_utc <= @End 
+              AND application_id IS NOT NULL
+              AND LOWER(application_id) LIKE LOWER(@SearchPattern)
+            GROUP BY application_id
+            ORDER BY TotalBytes DESC
+        ", new { Start = startUtc.ToString("o"), End = endUtc.ToString("o"), SearchPattern = searchPattern });
+
+        return rows.Take(limit).ToList();
+    }
+
+    #endregion
 }

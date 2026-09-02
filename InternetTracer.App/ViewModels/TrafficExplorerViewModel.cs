@@ -67,6 +67,23 @@ public partial class TrafficExplorerViewModel : ObservableObject
 
     public ObservableCollection<NetworkUsage> NetworkList { get; } = new();
 
+    // Filter/Sort State
+    [ObservableProperty]
+    private string? _selectedFilterApplicationId;
+
+    [ObservableProperty]
+    private string? _selectedFilterNetworkId;
+
+    [ObservableProperty]
+    private string _sortBy = "TotalBytes";
+
+    [ObservableProperty]
+    private bool _sortDescending = true;
+
+    public ObservableCollection<string> UniqueApplicationIds { get; } = new();
+
+    public ObservableCollection<string> UniqueNetworkIds { get; } = new();
+
     /// <summary>
     /// Constructor for production use (requires IPC client injection).
     /// Mock data support removed entirely - violates trust principle if left in production builds.
@@ -138,33 +155,49 @@ public partial class TrafficExplorerViewModel : ObservableObject
         }
     }
 
-    private async Task LoadRealDataAsync()
+    private async Task LoadRealDataAsync(CancellationToken? cancellationToken = null)
     {
         var startUtc = StartDate;
         var endUtc = EndDate;
 
-        // Get top applications for selected range
-        var topApps = await _telemetryService.GetTopApplicationsAsync(startUtc, endUtc, 50);
+        // Load unique IDs for filters
+        await LoadFilterOptionsAsync(startUtc, endUtc);
+
+        // Get top applications with filters applied
+        var appId = SelectedFilterApplicationId;
+        var apps = await _telemetryService.GetTopApplicationsFilteredAsync(startUtc, endUtc, 50, appId);
         
+        // Apply sorting
+        var sortField = SortBy.ToLowerInvariant();
+        var descending = SortDescending;
+        
+        if (sortField == "totalbytes")
+            apps = descending ? apps.OrderByDescending(a => a.TotalBytes).ToList() 
+                             : apps.OrderBy(a => a.TotalBytes).ToList();
+        else if (sortField == "downloadbytes")
+            apps = descending ? apps.OrderByDescending(a => a.DownloadBytes).ToList() 
+                             : apps.OrderBy(a => a.DownloadBytes).ToList();
+        else if (sortField == "uploadbytes")
+            apps = descending ? apps.OrderByDescending(a => a.UploadBytes).ToList() 
+                             : apps.OrderBy(a => a.UploadBytes).ToList();
+        else // Name
+            apps = descending ? apps.OrderByDescending(a => a.DisplayName).ToList() 
+                             : apps.OrderBy(a => a.DisplayName).ToList();
+
         ApplicationList.Clear();
-        if (topApps != null && topApps.Any())
+        foreach (var app in apps)
         {
-            foreach (var app in topApps)
-            {
-                ApplicationList.Add(app);
-            }
+            ApplicationList.Add(app);
         }
 
-        // Get network usage breakdown
-        var networks = await _telemetryService.GetNetworkUsageAsync(startUtc, endUtc);
+        // Get network usage filtered by network selection
+        var networkId = SelectedFilterNetworkId;
+        var networks = await _telemetryService.GetNetworkUsageFilteredAsync(startUtc, endUtc, networkId);
         
         NetworkList.Clear();
-        if (networks != null)
+        foreach (var network in networks)
         {
-            foreach (var network in networks)
-            {
-                NetworkList.Add(network);
-            }
+            NetworkList.Add(network);
         }
 
         // Get timeline chart data with adaptive resolution
@@ -251,6 +284,82 @@ public partial class TrafficExplorerViewModel : ObservableObject
             ExplorerDataState = InternetTracer_App.Components.ComponentDataState.Stale;
         else
             ExplorerDataState = InternetTracer_App.Components.ComponentDataState.Normal;
+    }
+
+    /// <summary>
+    /// Loads unique application/network IDs for filter dropdowns.
+    /// Called when loading data or changing time range.
+    /// </summary>
+    private async Task LoadFilterOptionsAsync(DateTime startUtc, DateTime endUtc)
+    {
+        try
+        {
+            // Get unique application IDs
+            var appIds = await _telemetryService.GetUniqueApplicationIdsAsync(startUtc, endUtc);
+            UniqueApplicationIds.Clear();
+            
+            if (appIds.Any())
+            {
+                UniqueApplicationIds.Insert(0, "All Applications");
+                
+                foreach (var id in appIds)
+                {
+                    UniqueApplicationIds.Add(id);
+                }
+            }
+            else
+            {
+                UniqueApplicationIds.Add("All Applications");
+            }
+
+            // Get unique network IDs
+            var netIds = await _telemetryService.GetUniqueNetworkIdsAsync(startUtc, endUtc);
+            UniqueNetworkIds.Clear();
+            
+            if (netIds.Any())
+            {
+                UniqueNetworkIds.Insert(0, "All Networks");
+                
+                foreach (var id in netIds)
+                {
+                    UniqueNetworkIds.Add(id);
+                }
+            }
+            else
+            {
+                UniqueNetworkIds.Add("All Networks");
+            }
+        }
+        catch (Exception ex)
+        {
+            // If filter options fail, use safe defaults
+            ErrorMessage = $"Failed to load filter options: {ex.Message}";
+            UniqueApplicationIds.Clear();
+            UniqueNetworkIds.Clear();
+            UniqueApplicationIds.Add("All Applications");
+            UniqueNetworkIds.Add("All Networks");
+        }
+    }
+
+    [RelayCommand]
+    private void ClearFilters()
+    {
+        SelectedFilterApplicationId = null;
+        SelectedFilterNetworkId = null;
+        
+        // Reset UI selections to "All"
+        if (UniqueApplicationIds.Contains("All Applications"))
+        {
+            SelectedFilterApplicationId = null;
+        }
+        
+        if (UniqueNetworkIds.Contains("All Networks"))
+        {
+            SelectedFilterNetworkId = null;
+        }
+        
+        SortBy = "TotalBytes";
+        SortDescending = true;
     }
 
     public void OnNavigatedFrom()
