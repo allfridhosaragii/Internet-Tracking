@@ -21,7 +21,7 @@ public class SqliteTelemetryQueryService : ITelemetryServiceApi
     public async Task<DashboardSummary> GetDashboardSummaryAsync()
     {
         var summary = new DashboardSummary();
-        var snapshot = _liveSnapshotProvider();
+        var snapshot = _liveBuffer.GetCurrentSnapshot();
         summary.CurrentSpeed = new SpeedSnapshot { DownloadBytesPerSecond = snapshot.CurrentDownloadBytesPerSec, UploadBytesPerSecond = snapshot.CurrentUploadBytesPerSec };
         
         var todayStart = DateTime.UtcNow.Date.ToString("o");

@@ -21,7 +21,7 @@ builder.Services.AddSingleton<TrafficDeltaCalculator>();
 builder.Services.AddSingleton<LiveTelemetryBuffer>();
 
 // Provide live snapshot from the DeltaCalculator (or keep it simple for now)
-builder.Services.AddSingleton<ITelemetryServiceApi>(sp => 
+builder.Services.AddSingleton<InternetTracer.Core.Contracts.ITelemetryServiceApi>(sp => 
 {
     var dbFactory = sp.GetRequiredService<DatabaseFactory>();
     var liveBuffer = sp.GetRequiredService<LiveTelemetryBuffer>();
@@ -30,7 +30,7 @@ builder.Services.AddSingleton<ITelemetryServiceApi>(sp =>
 
 builder.Services.AddSingleton<IpcServer>(sp => 
 {
-    var api = sp.GetRequiredService<ITelemetryServiceApi>();
+    var api = sp.GetRequiredService<InternetTracer.Core.Contracts.ITelemetryServiceApi>();
     // Fast-path: authorize current user (which is the one running the service, but wait, Service runs as LocalSystem. We need to pass the Interactive User SID or rely on BuiltinAdministratorsSid logic).
     // Fast-path: authorize current user (which is the one running the service/test).
     var userSid = System.Security.Principal.WindowsIdentity.GetCurrent().User;
