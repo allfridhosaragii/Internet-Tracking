@@ -14,4 +14,6 @@ public interface ITelemetryServiceApi
     Task<List<NetworkUsage>> GetNetworkUsageAsync(DateTime startUtc, DateTime endUtc);
     Task<ApplicationUsage> GetApplicationUsageAsync(string applicationId, DateTime startUtc, DateTime endUtc);
     Task<List<ConnectionEvent>> GetConnectionEventsAsync(int limit);
+    Task<ConnectionQuality> GetConnectionQualityAsync();
+    Task<CurrentSnapshot> GetCurrentSnapshotAsync();
 }

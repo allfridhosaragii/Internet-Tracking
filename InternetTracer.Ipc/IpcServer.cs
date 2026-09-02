@@ -14,11 +14,13 @@ public class IpcServer
 {
     private const string PipeName = "InternetTracerTelemetryPipe";
     private readonly ITelemetryServiceApi _apiImplementation;
+    private readonly SecurityIdentifier _authorizedClientSid;
     private CancellationTokenSource? _cts;
 
-    public IpcServer(ITelemetryServiceApi apiImplementation)
+    public IpcServer(ITelemetryServiceApi apiImplementation, SecurityIdentifier authorizedClientSid)
     {
         _apiImplementation = apiImplementation;
+        _authorizedClientSid = authorizedClientSid ?? throw new ArgumentNullException(nameof(authorizedClientSid));
     }
 
     public void Start()
@@ -38,14 +40,14 @@ public class IpcServer
         {
             try
             {
-                // Implement strict ACL: Only Interactive User and Admins can connect.
+                // Implement strict ACL: Only the specific authorized user and Admins can connect.
                 PipeSecurity pipeSecurity = new PipeSecurity();
                 
                 var adminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
                 pipeSecurity.AddAccessRule(new PipeAccessRule(adminSid, PipeAccessRights.ReadWrite, AccessControlType.Allow));
                 
-                var interactiveSid = new SecurityIdentifier(WellKnownSidType.InteractiveSid, null);
-                pipeSecurity.AddAccessRule(new PipeAccessRule(interactiveSid, PipeAccessRights.ReadWrite, AccessControlType.Allow));
+                // Allow the explicitly authorized client
+                pipeSecurity.AddAccessRule(new PipeAccessRule(_authorizedClientSid, PipeAccessRights.ReadWrite, AccessControlType.Allow));
                 
                 var networkSid = new SecurityIdentifier(WellKnownSidType.NetworkSid, null);
                 pipeSecurity.AddAccessRule(new PipeAccessRule(networkSid, PipeAccessRights.FullControl, AccessControlType.Deny));
@@ -53,7 +55,6 @@ public class IpcServer
                 var anonymousSid = new SecurityIdentifier(WellKnownSidType.AnonymousSid, null);
                 pipeSecurity.AddAccessRule(new PipeAccessRule(anonymousSid, PipeAccessRights.FullControl, AccessControlType.Deny));
 
-                // Wait, NamedPipeServerStream constructor with PipeSecurity requires ACL configuration.
                 // In .NET 6+, NamedPipeServerStreamAcl is used.
                 using var pipeServer = NamedPipeServerStreamAcl.Create(
                     PipeName,
@@ -64,6 +65,33 @@ public class IpcServer
                     0, 0, pipeSecurity);
 
                 await pipeServer.WaitForConnectionAsync(token);
+
+                bool isAuthorized = false;
+                pipeServer.RunAsClient(() =>
+                {
+                    var clientIdentity = WindowsIdentity.GetCurrent();
+                    if (clientIdentity.User != null && clientIdentity.User.Equals(_authorizedClientSid))
+                    {
+                        isAuthorized = true;
+                    }
+                    else if (clientIdentity.User != null && clientIdentity.Owner != null)
+                    {
+                        // Fallback check if user is a member of BuiltinAdministrators
+                        var adminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+                        var principal = new WindowsPrincipal(clientIdentity);
+                        if (principal.IsInRole(adminSid))
+                        {
+                            isAuthorized = true;
+                        }
+                    }
+                });
+
+                if (!isAuthorized)
+                {
+                    Console.WriteLine("Unauthorized client rejected. Dropping connection.");
+                    pipeServer.Disconnect();
+                    continue;
+                }
 
                 // Handle connection in background, allowing multiple clients
                 _ = Task.Run(() => HandleClientAsync(pipeServer, token), token);
@@ -121,7 +149,16 @@ public class IpcServer
                     var summary = await _apiImplementation.GetDashboardSummaryAsync();
                     response.Payload = JsonSerializer.SerializeToElement(summary);
                     break;
-                // Add other operations...
+                case "GetCurrentSnapshot":
+                    var snapshot = await _apiImplementation.GetCurrentSnapshotAsync();
+                    response.Payload = JsonSerializer.SerializeToElement(snapshot);
+                    break;
+                case "GetConnectionQuality":
+                    var quality = await _apiImplementation.GetConnectionQualityAsync();
+                    response.Payload = JsonSerializer.SerializeToElement(quality);
+                    break;
+                // Note: Other parameterized methods (GetTrafficTimeline, etc.) require payload parsing
+                // which will be fully implemented when the SQLite aggregation query layer is done.
                 default:
                     response.StatusCode = 404;
                     response.ErrorCode = "UnknownOperation";

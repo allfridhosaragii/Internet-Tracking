@@ -106,9 +106,22 @@ public class IpcClient : ITelemetryServiceApi, IDisposable
          return SendRequestAsync<ApplicationUsage>("GetApplicationUsage", new { applicationId, startUtc, endUtc });
     }
 
-    public Task<List<ConnectionEvent>> GetConnectionEventsAsync(int limit)
+    public async Task<List<ConnectionEvent>> GetConnectionEventsAsync(int limit)
     {
-        return SendRequestAsync<List<ConnectionEvent>>("GetConnectionEvents", new { limit });
+        return await SendRequestAsync<List<ConnectionEvent>>("GetConnectionEvents", new { Limit = limit }) 
+               ?? new List<ConnectionEvent>();
+    }
+
+    public async Task<CurrentSnapshot> GetCurrentSnapshotAsync()
+    {
+        return await SendRequestAsync<CurrentSnapshot>("GetCurrentSnapshot", new { }) 
+               ?? new CurrentSnapshot();
+    }
+
+    public async Task<ConnectionQuality> GetConnectionQualityAsync()
+    {
+        return await SendRequestAsync<ConnectionQuality>("GetConnectionQuality", new { }) 
+               ?? new ConnectionQuality();
     }
 
     public void Dispose()

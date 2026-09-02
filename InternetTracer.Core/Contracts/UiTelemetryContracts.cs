@@ -29,6 +29,14 @@ public class ConnectionQuality
 {
     public string Status { get; set; } = "Unknown";
     public long LatencyMs { get; set; }
+    public double PacketLossPercentage { get; set; }
+}
+
+public class CurrentSnapshot
+{
+    public long CurrentDownloadBytesPerSec { get; set; }
+    public long CurrentUploadBytesPerSec { get; set; }
+    public int ActiveConnections { get; set; }
 }
 
 public class TopUsageEntry

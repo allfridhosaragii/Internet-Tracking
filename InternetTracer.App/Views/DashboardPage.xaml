@@ -8,7 +8,65 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Grid>
-        <TextBlock Text="Dashboard" Style="{ThemeResource TitleTextBlockStyle}" Margin="24" />
-    </Grid>
+    <ScrollViewer>
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Header -->
+                <RowDefinition Height="Auto" /> <!-- Top KPIs -->
+                <RowDefinition Height="Auto" /> <!-- Charts area -->
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Overview" Style="{StaticResource DashboardHeaderStyle}" />
+
+            <!-- KPI Row -->
+            <Grid Grid.Row="1" ColumnSpacing="16" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Current Download KPI -->
+                <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="CURRENT DOWNLOAD" Style="{StaticResource CardTitleStyle}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <!-- TODO: Value converter for formatting -->
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay}" 
+                                       Style="{StaticResource KpiValueStyle}" 
+                                       Foreground="{StaticResource TelemetryDownloadBrush}"/>
+                            <TextBlock Text="B/s" Style="{StaticResource KpiUnitStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Current Upload KPI -->
+                <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="CURRENT UPLOAD" Style="{StaticResource CardTitleStyle}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <!-- TODO: Value converter for formatting -->
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay}" 
+                                       Style="{StaticResource KpiValueStyle}" 
+                                       Foreground="{StaticResource TelemetryUploadBrush}"/>
+                            <TextBlock Text="B/s" Style="{StaticResource KpiUnitStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Connection Quality KPI -->
+                <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="CONNECTION QUALITY" Style="{StaticResource CardTitleStyle}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock Text="{x:Bind ViewModel.Quality.Status, Mode=OneWay}" 
+                                       Style="{StaticResource KpiValueStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <ProgressRing Grid.Row="2" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Width="50" Height="50" />
+        </Grid>
+    </ScrollViewer>
 </Page>
