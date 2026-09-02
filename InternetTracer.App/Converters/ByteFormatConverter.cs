@@ -62,3 +62,21 @@ public class ByteVolumeFormatUnitConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
 }
 
+/// <summary>
+/// Converts a string to its first letter (uppercase).
+/// Used for app icon placeholders.
+/// </summary>
+public class FirstLetterConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is string str && !string.IsNullOrEmpty(str))
+        {
+            return char.ToUpperInvariant(str[0]).ToString();
+        }
+        return "?";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
+}
+

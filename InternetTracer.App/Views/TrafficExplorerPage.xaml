@@ -5,8 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:InternetTracer_App.ViewModels"
-    xmlns:local="using:InternetTracer_App.Views"
-    xmlns:xaml2xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:c="using:InternetTracer_App.Components"
+    xmlns:v="using:InternetTracer_App.Views"
+    xmlns:converters="using:InternetTracer_App.Converters">
+    <UserControl.Resources>
+        <converters:FirstLetterConverter x:Key="FirstLetterConverter" />
+    </UserControl.Resources>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <!-- Header Section -->
         <StackPanel Margin="24, 16, 24, 0">
@@ -24,15 +28,9 @@
 
         <!-- Time Range Selector -->
         <Border Margin="24, 0, 24, 16" Padding="16, 12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" CornerRadius="8">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="16">
-                    <RadioButton GroupName="TimeRange" Content="Last Hour" IsChecked="True" Margin="0,0,12,0" />
-                    <RadioButton GroupName="TimeRange" Content="Last 24 Hours" Margin="0,0,12,0" />
-                    <RadioButton GroupName="TimeRange" Content="Last 7 Days" Margin="0,0,12,0" />
-                    <RadioButton GroupName="TimeRange" Content="Last 30 Days" Margin="0,0,12,0" />
-                    <RadioButton GroupName="TimeRange" Content="Custom..." />
-                </StackPanel>
-            </StackPanel>
+            <!-- Time Range Selector -->
+            <c:TimeRangeSelector x:Name="TimeRangeSelector" 
+                               SelectTimeRangeCommand="{Binding SelectTimeRangeCommand}" />
         </Border>
 
         <!-- Main Content Grid -->
@@ -78,10 +76,7 @@
 
                                             <!-- App Icon Placeholder -->
                                             <Border Width="32" Height="32" CornerRadius="4" Background="#E5E7EB" Grid.RowSpan="3" Grid.Column="0">
-                                                <Border.Resources>
-                                                    <local:StringConverter x:Key="StringConverter" />
-                                                </Border.Resources>
-                                                <TextBlock Text="{Binding DisplayName, Converter={StaticResource StringConverter}}" 
+                                                <TextBlock Text="{Binding DisplayName, Converter={StaticResource FirstLetterConverter}}" 
                                                            HorizontalAlignment="Center" 
                                                            VerticalAlignment="Center"
                                                            FontSize="16"
@@ -159,38 +154,10 @@
                     <!-- Timeline Visualizer -->
                     <Border Grid.Row="1" Margin="16,16,16,0" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="60" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="24" />
-                            </Grid.RowDefinitions>
-
-                            <!-- Sample visualization placeholder -->
-                            <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8" Background="#3B82F6" />
-                            
-                            <!-- Y-Axis Labels -->
-                            <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="2GB" FontSize="10" Foreground="{ThemeResource TextFillColorTertiary}" Margin="0,0,8,0" />
-                                <TextBlock Text="1GB" FontSize="10" Foreground="{ThemeResource TextFillColorTertiary}" Margin="0,0,8,0" />
-                                <TextBlock Text="0B" FontSize="10" Foreground="{ThemeResource TextFillColorTertiary}" Margin="0,0,8,0" />
-                            </StackPanel>
-
-                            <!-- Chart Area (placeholder) -->
-                            <Border Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <Path Data="M 0 100 L 50 50 L 100 80 L 150 30 L 200 60"
-                                          Stroke="#3B82F6"
-                                          StrokeThickness="2" />
-                                    <TextBlock Text="Timeline placeholder"
-                                               FontSize="12"
-                                               Foreground="{ThemeResource TextFillColorTertiary}"
-                                               Margin="0,8,0,0"
-                                               HorizontalAlignment="Center" />
-                                </StackPanel>
-                            </Border>
+                            <!-- Using LiveTrafficVisualizer for historical data display -->
+                            <c:LiveTrafficVisualizer x:Name="HistoricalTimelineChart"
+                                                     Timeline="{Binding TrafficTimeline}"
+                                                     Height="200" />
                         </Grid>
                     </Border>
 

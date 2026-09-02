@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 public partial class TrafficExplorerViewModel : ObservableObject
 {
-    private readonly ITelemetryServiceApi? _telemetryService;
-    private readonly bool _useMockData;
+    private readonly ITelemetryServiceApi _telemetryService;
+    private DateTime _lastSuccessfulPoll = DateTime.MinValue;
 
     [ObservableProperty]
     private TimeRangeType _timeRange = TimeRangeType.Last24Hours;
@@ -67,16 +67,13 @@ public partial class TrafficExplorerViewModel : ObservableObject
 
     public ObservableCollection<NetworkUsage> NetworkList { get; } = new();
 
-    public TrafficExplorerViewModel()
-    {
-        _useMockData = true;
-        _telemetryService = null;
-    }
-
+    /// <summary>
+    /// Constructor for production use (requires IPC client injection).
+    /// Mock data support removed entirely - violates trust principle if left in production builds.
+    /// </summary>
     public TrafficExplorerViewModel(ITelemetryServiceApi telemetryService)
     {
-        _telemetryService = telemetryService;
-        _useMockData = false;
+        _telemetryService = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
     }
 
     [RelayCommand]
@@ -110,25 +107,24 @@ public partial class TrafficExplorerViewModel : ObservableObject
         try
         {
             LoadState = DashboardLoadState.Loading;
-            ConnectionState = TelemetryConnectionState.Connecting;
             UpdateComponentState();
 
-            if (_useMockData)
-            {
-                await LoadMockDataAsync();
-            }
-            else
-            {
-                await LoadRealDataAsync();
-            }
+            await LoadRealDataAsync();
 
             _lastSuccessfulPoll = DateTime.UtcNow;
             LastUpdatedText = "updated just now";
 
-            LoadState = DashboardLoadState.Loaded;
+            LoadState = ApplicationList.Count == 0 ? DashboardLoadState.Empty : DashboardLoadState.Loaded;
             ConnectionState = TelemetryConnectionState.Connected;
             FreshnessState = TelemetryFreshnessState.Live;
             ErrorMessage = string.Empty;
+        }
+        catch (System.IO.IOException)
+        {
+            // IPC connection failed
+            LoadState = DashboardLoadState.Error;
+            ConnectionState = TelemetryConnectionState.Offline;
+            ErrorMessage = "Internet Tracer service is unavailable.";
         }
         catch (Exception ex)
         {
@@ -142,57 +138,16 @@ public partial class TrafficExplorerViewModel : ObservableObject
         }
     }
 
-    private async Task LoadMockDataAsync()
-    {
-        await Task.Delay(500); // Simulate loading
-
-        var mockApps = new[]
-        {
-            CreateMockApplication("Chrome", "Google Chrome", 2500000000L, 150000000L),
-            CreateMockApplication("Firefox", "Mozilla Firefox", 1800000000L, 95000000L),
-            CreateMockApplication("Spotify", "Spotify", 1200000000L, 45000000L),
-            CreateMockApplication("VSCode", "Visual Studio Code", 850000000L, 32000000L),
-            CreateMockApplication("Discord", "Discord", 620000000L, 28000000L),
-            CreateMockApplication("Steam", "Steam", 4500000000L, 12000000L),
-            CreateMockApplication("Edge", "Microsoft Edge", 980000000L, 55000000L),
-            CreateMockApplication("Zoom", "Zoom", 320000000L, 180000000L),
-            CreateMockApplication("Slack", "Slack", 280000000L, 15000000L),
-            CreateMockApplication("OneDrive", "Microsoft OneDrive", 150000000L, 85000000L)
-        };
-
-        ApplicationList.Clear();
-        foreach (var app in mockApps)
-        {
-            ApplicationList.Add(app);
-        }
-
-        var mockNetworks = new[]
-        {
-            CreateMockNetwork("Ethernet", "Intel Ethernet Controller", 8500000000L, 420000000L),
-            CreateMockNetwork("WiFi", "Wi-Fi Adapter", 3200000000L, 180000000L)
-        };
-
-        NetworkList.Clear();
-        foreach (var network in mockNetworks)
-        {
-            NetworkList.Add(network);
-        }
-
-        GenerateMockTimeline();
-    }
-
     private async Task LoadRealDataAsync()
     {
-        if (_telemetryService == null)
-            throw new InvalidOperationException("Telemetry service not initialized");
-
         var startUtc = StartDate;
         var endUtc = EndDate;
 
+        // Get top applications for selected range
         var topApps = await _telemetryService.GetTopApplicationsAsync(startUtc, endUtc, 50);
         
         ApplicationList.Clear();
-        if (topApps != null)
+        if (topApps != null && topApps.Any())
         {
             foreach (var app in topApps)
             {
@@ -200,6 +155,7 @@ public partial class TrafficExplorerViewModel : ObservableObject
             }
         }
 
+        // Get network usage breakdown
         var networks = await _telemetryService.GetNetworkUsageAsync(startUtc, endUtc);
         
         NetworkList.Clear();
@@ -211,10 +167,32 @@ public partial class TrafficExplorerViewModel : ObservableObject
             }
         }
 
-        var timeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, "1h");
+        // Get timeline chart data with adaptive resolution
+        var resolution = DetermineHistoricalResolution(startUtc, endUtc);
+        var timeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, resolution);
+        
         TrafficTimeline = timeline;
-
         CalculateTotalTraffic();
+    }
+
+    /// <summary>
+    /// Determines optimal resolution based on time range size.
+    /// Matches persisted minute-level granularity with reasonable limits.
+    /// </summary>
+    private static string DetermineHistoricalResolution(DateTime start, DateTime end)
+    {
+        var duration = end - start;
+        
+        if (duration.TotalMinutes <= 1440)        // Up to 24 hours
+            return "1m";                          // Use 1-minute buckets (max 1440 points)
+        else if (duration.TotalHours <= 168)     // Up to 7 days  
+            return "1h";                          // Aggregate to hourly (max 168 points)
+        else if (duration.TotalDays <= 30)       // Up to 30 days
+            return "1h";                          // Hourly buckets (max 720 points)
+        else if (duration.TotalDays <= 90)       // Up to 90 days
+            return "4h";                          // 4-hour buckets (max 540 points)
+        else                                      // 90+ days
+            return "1d";                          // Daily buckets (max 365 points per day)
     }
 
     [RelayCommand]
@@ -222,19 +200,12 @@ public partial class TrafficExplorerViewModel : ObservableObject
     {
         try
         {
-            if (_useMockData)
-            {
-                SelectedAppDetails = GetMockApplicationDetails(applicationId);
-            }
-            else
-            {
-                if (_telemetryService == null)
-                    throw new InvalidOperationException("Telemetry service not initialized");
+            if (_telemetryService == null)
+                throw new InvalidOperationException("Telemetry service not initialized");
 
-                var startUtc = StartDate;
-                var endUtc = EndDate;
-                SelectedAppDetails = await _telemetryService.GetApplicationUsageAsync(applicationId, startUtc, endUtc);
-            }
+            var startUtc = StartDate;
+            var endUtc = EndDate;
+            SelectedAppDetails = await _telemetryService.GetApplicationUsageAsync(applicationId, startUtc, endUtc);
         }
         catch (Exception ex)
         {
@@ -246,27 +217,6 @@ public partial class TrafficExplorerViewModel : ObservableObject
     public void NavigateBack()
     {
         // Navigation logic would go here
-    }
-
-    private void GenerateMockTimeline()
-    {
-        var points = new System.Collections.Generic.List<TrafficTimelinePoint>();
-        var now = DateTime.UtcNow;
-        var hourStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
-
-        for (int i = 0; i < 24; i++)
-        {
-            var timestamp = hourStart.AddHours(i);
-            points.Add(new TrafficTimelinePoint
-            {
-                TimestampUtc = timestamp,
-                DownloadBytes = Random.Shared.Next(50_000000, 200_000000),
-                UploadBytes = Random.Shared.Next(10_000000, 50_000000)
-            });
-        }
-
-        TrafficTimeline = new TrafficTimeline { Points = points };
-        CalculateTotalTraffic();
     }
 
     private void CalculateTotalTraffic()
@@ -286,89 +236,6 @@ public partial class TrafficExplorerViewModel : ObservableObject
             UploadBytes = totalUpload
         };
     }
-
-    private static TopUsageEntry CreateMockApplication(string displayName, string processName, long downloadBytes, long uploadBytes)
-    {
-        return new TopUsageEntry
-        {
-            EntityId = Guid.NewGuid().ToString(),
-            DisplayName = displayName,
-            ProcessName = processName,
-            DownloadBytes = downloadBytes,
-            UploadBytes = uploadBytes,
-            TotalBytes = downloadBytes + uploadBytes,
-            AttributionState = "Attributed"
-        };
-    }
-
-    private static NetworkUsage CreateMockNetwork(string entityId, string displayName, long downloadBytes, long uploadBytes)
-    {
-        return new NetworkUsage
-        {
-            NetworkId = entityId,
-            DisplayName = displayName,
-            TotalTraffic = new TrafficSnapshot
-            {
-                DownloadBytes = downloadBytes,
-                UploadBytes = uploadBytes
-            }
-        };
-    }
-
-    private ApplicationUsage? GetMockApplicationDetails(string applicationId)
-    {
-        var apps = new Dictionary<string, ApplicationUsage>
-        {
-            ["chrome"] = new ApplicationUsage
-            {
-                ApplicationId = "chrome",
-                ApplicationName = "Google Chrome",
-                ExecutablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-                TotalTraffic = new TrafficSnapshot { DownloadBytes = 2500000000L, UploadBytes = 150000000L },
-                Timeline = new TrafficTimeline { Points = GenerateMockTimelinePoints() }
-            },
-            ["firefox"] = new ApplicationUsage
-            {
-                ApplicationId = "firefox",
-                ApplicationName = "Mozilla Firefox",
-                ExecutablePath = "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
-                TotalTraffic = new TrafficSnapshot { DownloadBytes = 1800000000L, UploadBytes = 95000000L },
-                Timeline = new TrafficTimeline { Points = GenerateMockTimelinePoints() }
-            },
-            ["spotify"] = new ApplicationUsage
-            {
-                ApplicationId = "spotify",
-                ApplicationName = "Spotify",
-                ExecutablePath = "C:\\Program Files\\Spotify\\Setup\\spotify.exe",
-                TotalTraffic = new TrafficSnapshot { DownloadBytes = 1200000000L, UploadBytes = 45000000L },
-                Timeline = new TrafficTimeline { Points = GenerateMockTimelinePoints() }
-            }
-        };
-
-        return apps.GetValueOrDefault(applicationId.ToLower());
-    }
-
-    private System.Collections.Generic.List<TrafficTimelinePoint> GenerateMockTimelinePoints()
-    {
-        var points = new System.Collections.Generic.List<TrafficTimelinePoint>();
-        var now = DateTime.UtcNow;
-        var hourStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
-
-        for (int i = 0; i < 24; i++)
-        {
-            var timestamp = hourStart.AddHours(i);
-            points.Add(new TrafficTimelinePoint
-            {
-                TimestampUtc = timestamp,
-                DownloadBytes = Random.Shared.Next(50_000000, 200_000000),
-                UploadBytes = Random.Shared.Next(10_000000, 50_000000)
-            });
-        }
-
-        return points;
-    }
-
-    private DateTime _lastSuccessfulPoll = DateTime.MinValue;
 
     private void UpdateComponentState()
     {
