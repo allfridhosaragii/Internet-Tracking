@@ -35,7 +35,10 @@ public partial class DashboardViewModel : ObservableObject
     private string _errorMessage = string.Empty;
 
     [ObservableProperty]
-    private string _lastUpdatedText = string.Empty;
+    private string _liveIndicatorText = "CONNECTING";
+
+    [ObservableProperty]
+    private string _lastUpdatedText = "waiting for data";
 
     [ObservableProperty]
     private Components.ComponentDataState _dashboardDataState = Components.ComponentDataState.Loading;
@@ -44,6 +47,7 @@ public partial class DashboardViewModel : ObservableObject
     private TrafficTimeline? _timeline;
 
     private CancellationTokenSource? _pollingCts;
+    private DateTime _lastSuccessfulPoll = DateTime.MinValue;
 
 #pragma warning restore MVVMTK0045
 
@@ -62,17 +66,36 @@ public partial class DashboardViewModel : ObservableObject
             UpdateComponentState();
 
             Summary = await _telemetryService.GetDashboardSummaryAsync();
-            Snapshot = await _telemetryService.GetCurrentSnapshotAsync();
             Quality = await _telemetryService.GetConnectionQualityAsync();
 
             var endUtc = DateTime.UtcNow;
             var startUtc = endUtc.AddSeconds(-60);
             Timeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, "1s");
+            
+            // Sync Snapshot with the Timeline's latest point to ensure visual consistency
+            if (Timeline?.Points?.Count > 0)
+            {
+                var last = Timeline.Points.Last();
+                var newSnapshot = await _telemetryService.GetCurrentSnapshotAsync();
+                Snapshot = new CurrentSnapshot
+                {
+                    CurrentDownloadBytesPerSec = last.DownloadBytes,
+                    CurrentUploadBytesPerSec = last.UploadBytes,
+                    ActiveConnections = newSnapshot.ActiveConnections
+                };
+            }
+            else
+            {
+                Snapshot = await _telemetryService.GetCurrentSnapshotAsync();
+            }
+
+            _lastSuccessfulPoll = DateTime.UtcNow;
 
             LoadState = Summary == null || Snapshot == null ? DashboardLoadState.Empty : DashboardLoadState.Loaded;
             ConnectionState = TelemetryConnectionState.Connected;
             FreshnessState = TelemetryFreshnessState.Live;
-            LastUpdatedText = "Live";
+            LiveIndicatorText = "LIVE";
+            LastUpdatedText = "updated just now";
             
             // Assume attribution is healthy if we have apps, or empty if we don't, but for now we say Healthy
             AttributionHealth = Summary?.TopApplications?.Count > 0 ? AttributionHealthState.Healthy : AttributionHealthState.Unavailable;
@@ -114,27 +137,72 @@ public partial class DashboardViewModel : ObservableObject
             {
                 await Task.Delay(1000, token);
                 if (token.IsCancellationRequested) break;
-
-                Snapshot = await _telemetryService.GetCurrentSnapshotAsync();
                 
                 var endUtc = DateTime.UtcNow;
                 var startUtc = endUtc.AddSeconds(-60);
-                Timeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, "1s");
+                var newTimeline = await _telemetryService.GetTrafficTimelineAsync(startUtc, endUtc, "1s");
+                Timeline = newTimeline;
+
+                if (newTimeline?.Points?.Count > 0)
+                {
+                    var last = newTimeline.Points.Last();
+                    var newSnapshot = await _telemetryService.GetCurrentSnapshotAsync();
+                    Snapshot = new CurrentSnapshot
+                    {
+                        CurrentDownloadBytesPerSec = last.DownloadBytes,
+                        CurrentUploadBytesPerSec = last.UploadBytes,
+                        ActiveConnections = newSnapshot.ActiveConnections
+                    };
+                }
+                else
+                {
+                    Snapshot = await _telemetryService.GetCurrentSnapshotAsync();
+                }
+
+                _lastSuccessfulPoll = DateTime.UtcNow;
 
                 if (ConnectionState != TelemetryConnectionState.Connected)
                 {
                     ConnectionState = TelemetryConnectionState.Connected;
-                    UpdateComponentState();
                 }
+                
+                FreshnessState = TelemetryFreshnessState.Live;
+                LiveIndicatorText = "LIVE";
+                UpdateFreshnessText();
+                UpdateComponentState();
             }
             catch (Exception)
             {
                 // Silently degrade on transient poll failure, but mark as stale/offline if it persists
-                ConnectionState = TelemetryConnectionState.Offline;
+                var delta = (DateTime.UtcNow - _lastSuccessfulPoll).TotalSeconds;
+                if (delta > 10)
+                {
+                    ConnectionState = TelemetryConnectionState.Offline;
+                    LiveIndicatorText = "OFFLINE";
+                }
+                else
+                {
+                    FreshnessState = TelemetryFreshnessState.Stale;
+                    LiveIndicatorText = "STALE";
+                }
+                
+                UpdateFreshnessText();
                 UpdateComponentState();
-                break;
+                
+                if (ConnectionState == TelemetryConnectionState.Offline)
+                    break;
             }
         }
+    }
+
+    private void UpdateFreshnessText()
+    {
+        if (_lastSuccessfulPoll == DateTime.MinValue) return;
+        var delta = (DateTime.UtcNow - _lastSuccessfulPoll).TotalSeconds;
+        if (delta < 2)
+            LastUpdatedText = "updated just now";
+        else
+            LastUpdatedText = $"updated {delta:F1}s ago";
     }
 
     public void OnNavigatedFrom()

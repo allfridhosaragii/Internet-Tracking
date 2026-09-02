@@ -103,7 +103,13 @@ public class SqliteTelemetryQueryService : ITelemetryServiceApi
     {
         using var connection = _dbFactory.CreateConnection();
         var rows = await connection.QueryAsync<TopUsageEntry>(@"
-            SELECT application_id as EntityId, application_id as DisplayName, SUM(download_bytes + upload_bytes) as TotalBytes
+            SELECT 
+                application_id as EntityId, 
+                application_id as DisplayName, 
+                application_id as ProcessName,
+                SUM(download_bytes) as DownloadBytes,
+                SUM(upload_bytes) as UploadBytes,
+                SUM(download_bytes + upload_bytes) as TotalBytes
             FROM traffic_minute
             WHERE bucket_utc >= @Start AND bucket_utc <= @End AND application_id IS NOT NULL
             GROUP BY application_id

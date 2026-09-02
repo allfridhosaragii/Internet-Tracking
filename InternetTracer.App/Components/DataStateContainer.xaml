@@ -10,7 +10,7 @@
     <Grid>
         <!-- NORMAL / STALE / DEGRADED STATE (Show Content) -->
         <ContentPresenter x:Name="MainContentPresenter" 
-                          Content="{x:Bind Content, Mode=OneWay}" 
+                          Content="{x:Bind InnerContent, Mode=OneWay}" 
                           Visibility="Collapsed" />
 
         <!-- LOADING STATE -->

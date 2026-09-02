@@ -40,3 +40,25 @@ public class ByteFormatUnitConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
 }
+
+public class ByteVolumeFormatUnitConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is not long bytes) return "B";
+        
+        double val = bytes;
+        if (val < 1024) return "B";
+        val /= 1024;
+        if (val < 1024) return "KB";
+        val /= 1024;
+        if (val < 1024) return "MB";
+        val /= 1024;
+        if (val < 1024) return "GB";
+        val /= 1024;
+        return "TB";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
+}
+

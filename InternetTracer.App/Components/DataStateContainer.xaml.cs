@@ -3,12 +3,22 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace InternetTracer_App.Components;
 
+[Microsoft.UI.Xaml.Markup.ContentProperty(Name = "InnerContent")]
 public sealed partial class DataStateContainer : UserControl
 {
     public DataStateContainer()
     {
         this.InitializeComponent();
         UpdateState();
+    }
+
+    public static readonly DependencyProperty InnerContentProperty =
+        DependencyProperty.Register("InnerContent", typeof(object), typeof(DataStateContainer), new PropertyMetadata(null));
+
+    public object InnerContent
+    {
+        get => GetValue(InnerContentProperty);
+        set => SetValue(InnerContentProperty, value);
     }
 
     public static readonly DependencyProperty StateProperty =

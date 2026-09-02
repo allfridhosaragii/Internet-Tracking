@@ -43,7 +43,11 @@ public class TopUsageEntry
 {
     public string EntityId { get; set; } = string.Empty; // App ID or Network ID
     public string DisplayName { get; set; } = string.Empty;
+    public string ProcessName { get; set; } = string.Empty;
+    public long DownloadBytes { get; set; }
+    public long UploadBytes { get; set; }
     public long TotalBytes { get; set; }
+    public string AttributionState { get; set; } = "Attributed";
 }
 
 public class TrafficTimeline

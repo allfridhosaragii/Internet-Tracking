@@ -1,13 +1,21 @@
-Value does not fall within the expected range.
+The text associated with this error code could not be found.
+
+Cannot find a Resource with the Name/Key SurfaceStrokeDefaultBrush [Line: 230 Position: 44]
    at WinRT.ExceptionHelpers.<ThrowExceptionForHR>g__Throw|38_0(Int32 hr)
    at WinRT.ExceptionHelpers.ThrowExceptionForHR(Int32 hr)
-   at ABI.Microsoft.UI.Xaml.Controls.IContentPresenterMethods.set_Content(IObjectReference _obj, Object value)
-   at Microsoft.UI.Xaml.Controls.ContentPresenter.set_Content(Object value)
-   at InternetTracer_App.Components.DataStateContainer.XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentPresenter_Content(ContentPresenter obj, Object value, String targetNullValue)
-   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Update_Content(UIElement obj, Int32 phase)
-   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Update_(DataStateContainer obj, Int32 phase)
-   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Update()
-   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Initialize()
-   at InternetTracer_App.Components.DataStateContainer.DataStateContainer_obj1_Bindings.Loading(FrameworkElement src, Object data)
-   at WinRT._EventSource_global__Windows_Foundation_TypedEventHandler_global__Microsoft_UI_Xaml_FrameworkElement__object_.EventState.<GetEventInvoke>b__1_0(FrameworkElement sender, Object args)
-   at WinRT.GenericTypeInstantiations.Windows_Foundation_TypedEventHandler_2_Microsoft_UI_Xaml_FrameworkElement__object.Do_Abi_Invoke(IntPtr thisPtr, IntPtr sender, IntPtr args)
+   at ABI.Microsoft.UI.Xaml.IApplicationStaticsMethods.LoadComponent(IObjectReference _obj, Object component, Uri resourceLocator, ComponentResourceLocation componentResourceLocation)
+   at Microsoft.UI.Xaml.Application.LoadComponent(Object component, Uri resourceLocator, ComponentResourceLocation componentResourceLocation)
+   at InternetTracer_App.Views.DashboardPage.InitializeComponent()
+   at InternetTracer_App.Views.DashboardPage..ctor()
+   at InternetTracer_App.InternetTracer_App_XamlTypeInfo.XamlTypeInfoProvider.Activate_63_DashboardPage()
+   at InternetTracer_App.InternetTracer_App_XamlTypeInfo.XamlUserType.ActivateInstance()
+   at ABI.Microsoft.UI.Xaml.Markup.IXamlType.Do_Abi_ActivateInstance_13(IntPtr thisPtr, IntPtr* result)
+--- End of stack trace from previous location ---
+   at WinRT.ExceptionHelpers.<ThrowExceptionForHR>g__Throw|38_0(Int32 hr)
+   at WinRT.ExceptionHelpers.ThrowExceptionForHR(Int32 hr)
+   at ABI.Microsoft.UI.Xaml.Controls.INavigateMethods.Navigate(IObjectReference _obj, Type sourcePageType)
+   at Microsoft.UI.Xaml.Controls.Frame.Navigate(Type sourcePageType)
+   at InternetTracer_App.MainWindow..ctor()
+   at InternetTracer_App.App.OnLaunched(LaunchActivatedEventArgs args)
+   at Microsoft.UI.Xaml.Application.Microsoft.UI.Xaml.IApplicationOverrides.OnLaunched(LaunchActivatedEventArgs args)
+   at ABI.Microsoft.UI.Xaml.IApplicationOverrides.Do_Abi_OnLaunched_0(IntPtr thisPtr, IntPtr args)

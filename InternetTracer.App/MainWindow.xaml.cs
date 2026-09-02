@@ -24,6 +24,7 @@ public sealed partial class MainWindow : Window
     {
         if (args.IsSettingsInvoked)
         {
+            // Settings page not fully implemented yet, but route is active.
             // RootFrame.Navigate(typeof(SettingsPage));
         }
         else
@@ -45,6 +46,9 @@ public sealed partial class MainWindow : Window
                     break;
                 case "SessionsPage":
                     RootFrame.Navigate(typeof(SessionsPage));
+                    break;
+                case "AnalyticsPage":
+                    RootFrame.Navigate(typeof(AnalyticsPage));
                     break;
             }
         }

@@ -148,8 +148,28 @@ public class IpcServer
                     var quality = await _apiImplementation.GetConnectionQualityAsync();
                     response.Payload = JsonSerializer.SerializeToElement(quality);
                     break;
-                // Note: Other parameterized methods (GetTrafficTimeline, etc.) require payload parsing
-                // which will be fully implemented when the SQLite aggregation query layer is done.
+                case "GetTrafficTimeline":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        var res = req.GetProperty("resolution").GetString() ?? "1s";
+                        var timeline = await _apiImplementation.GetTrafficTimelineAsync(start, end, res);
+                        response.Payload = JsonSerializer.SerializeToElement(timeline);
+                    }
+                    break;
+                case "GetTopApplications":
+                    if (request.Payload.HasValue)
+                    {
+                        var req = request.Payload.Value;
+                        var start = req.GetProperty("startUtc").GetDateTime();
+                        var end = req.GetProperty("endUtc").GetDateTime();
+                        var limit = req.GetProperty("limit").GetInt32();
+                        var apps = await _apiImplementation.GetTopApplicationsAsync(start, end, limit);
+                        response.Payload = JsonSerializer.SerializeToElement(apps);
+                    }
+                    break;
                 default:
                     response.StatusCode = 404;
                     response.ErrorCode = "UnknownOperation";
