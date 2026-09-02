@@ -46,17 +46,18 @@ public class MinuteAggregator
                 var samples = bag.ToList();
                 if (!samples.Any()) continue;
 
-                var groups = samples.GroupBy(s => s.InterfaceId);
+                var groups = samples.GroupBy(s => new { s.InterfaceId, s.ApplicationId });
                 foreach (var g in groups)
                 {
                     aggregates.Add(new TrafficMinuteAggregate
                     {
                         BucketUtc = key,
-                        InterfaceId = g.Key,
+                        InterfaceId = g.Key.InterfaceId,
+                        ApplicationId = g.Key.ApplicationId,
                         DownloadBytes = g.Sum(x => x.BytesReceived),
                         UploadBytes = g.Sum(x => x.BytesSent),
                         SampleCount = g.Count(),
-                        AttributionState = AttributionState.Unattributed
+                        AttributionState = string.IsNullOrEmpty(g.Key.ApplicationId) ? AttributionState.Unattributed : AttributionState.Attributed
                     });
                 }
             }
@@ -70,9 +71,9 @@ public class MinuteAggregator
         foreach (var agg in aggregates)
         {
             await connection.ExecuteAsync(@"
-                INSERT INTO traffic_minute (bucket_utc, interface_id, download_bytes, upload_bytes, sample_count, attribution_state)
-                VALUES (@BucketUtc, @InterfaceId, @DownloadBytes, @UploadBytes, @SampleCount, @AttributionState)
-                ON CONFLICT(bucket_utc, interface_id) DO UPDATE SET
+                INSERT INTO traffic_minute (bucket_utc, interface_id, application_id, download_bytes, upload_bytes, sample_count, attribution_state)
+                VALUES (@BucketUtc, @InterfaceId, @ApplicationId, @DownloadBytes, @UploadBytes, @SampleCount, @AttributionState)
+                ON CONFLICT(bucket_utc, interface_id, application_id) DO UPDATE SET
                     download_bytes = traffic_minute.download_bytes + @DownloadBytes,
                     upload_bytes = traffic_minute.upload_bytes + @UploadBytes,
                     sample_count = traffic_minute.sample_count + @SampleCount;
@@ -80,6 +81,7 @@ public class MinuteAggregator
             {
                 BucketUtc = agg.BucketUtc.ToString("o"), 
                 agg.InterfaceId,
+                ApplicationId = agg.ApplicationId ?? "",
                 agg.DownloadBytes,
                 agg.UploadBytes,
                 agg.SampleCount,

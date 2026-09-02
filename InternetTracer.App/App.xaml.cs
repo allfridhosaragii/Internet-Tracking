@@ -52,10 +52,10 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         // Register IPC Client as Singleton (Production)
-        // services.AddSingleton<ITelemetryServiceApi, IpcClient>();
+        services.AddSingleton<ITelemetryServiceApi, IpcClient>();
 
         // Use Design Fixture for UI Prototyping and Layout Generation
-        services.AddSingleton<ITelemetryServiceApi, InternetTracer_App.Services.DesignFixtureTelemetryService>();
+        // services.AddSingleton<ITelemetryServiceApi, InternetTracer_App.Services.DesignFixtureTelemetryService>();
 
         // ViewModels will be registered here
         services.AddTransient<InternetTracer_App.ViewModels.DashboardViewModel>();

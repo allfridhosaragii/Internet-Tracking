@@ -5,15 +5,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:InternetTracer_App.Converters"
+    xmlns:core="using:InternetTracer.Core.Contracts"
     mc:Ignorable="d"
     Background="Transparent">
+
+    <Page.Resources>
+        <converters:ByteFormatValueConverter x:Key="ByteValueConverter" />
+        <converters:ByteFormatUnitConverter x:Key="ByteUnitConverter" />
+    </Page.Resources>
 
     <ScrollViewer>
         <Grid Margin="24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Header -->
                 <RowDefinition Height="Auto" /> <!-- Top KPIs -->
-                <RowDefinition Height="Auto" /> <!-- Charts area -->
+                <RowDefinition Height="Auto" /> <!-- Top Apps -->
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="Overview" Style="{StaticResource DashboardHeaderStyle}" />
@@ -31,11 +38,11 @@
                     <StackPanel>
                         <TextBlock Text="CURRENT DOWNLOAD" Style="{StaticResource CardTitleStyle}" />
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <!-- TODO: Value converter for formatting -->
-                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay}" 
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
                                        Style="{StaticResource KpiValueStyle}" 
                                        Foreground="{StaticResource TelemetryDownloadBrush}"/>
-                            <TextBlock Text="B/s" Style="{StaticResource KpiUnitStyle}" />
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentDownloadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
+                                       Style="{StaticResource KpiUnitStyle}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -45,11 +52,11 @@
                     <StackPanel>
                         <TextBlock Text="CURRENT UPLOAD" Style="{StaticResource CardTitleStyle}" />
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <!-- TODO: Value converter for formatting -->
-                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay}" 
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteValueConverter}}" 
                                        Style="{StaticResource KpiValueStyle}" 
                                        Foreground="{StaticResource TelemetryUploadBrush}"/>
-                            <TextBlock Text="B/s" Style="{StaticResource KpiUnitStyle}" />
+                            <TextBlock Text="{x:Bind ViewModel.Snapshot.CurrentUploadBytesPerSec, Mode=OneWay, Converter={StaticResource ByteUnitConverter}}" 
+                                       Style="{StaticResource KpiUnitStyle}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -66,7 +73,35 @@
                 </Border>
             </Grid>
             
-            <ProgressRing Grid.Row="2" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Width="50" Height="50" />
+            <Border Grid.Row="2" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="TOP APPLICATIONS (TODAY)" Style="{StaticResource CardTitleStyle}" />
+                    
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.Summary.TopApplications, Mode=OneWay}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="core:TopUsageEntry">
+                                <Grid Margin="0,4,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Grid.Column="0" Text="{x:Bind DisplayName}" VerticalAlignment="Center" FontFamily="{StaticResource BodyFontFamily}" />
+                                    
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteValueConverter}}" FontWeight="SemiBold" />
+                                        <TextBlock Text=" " />
+                                        <TextBlock Text="{x:Bind TotalBytes, Converter={StaticResource ByteUnitConverter}}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </StackPanel>
+            </Border>
+            
+            <ProgressRing Grid.Row="2" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Width="50" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
     </ScrollViewer>
 </Page>

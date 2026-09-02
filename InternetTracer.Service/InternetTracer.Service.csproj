@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-InternetTracer.Service-809ce2e1-76d3-431d-944c-dbe4e9057230</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.19" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InternetTracer.Core\InternetTracer.Core.csproj" />
+    <ProjectReference Include="..\InternetTracer.Data\InternetTracer.Data.csproj" />
+    <ProjectReference Include="..\InternetTracer.Monitor\InternetTracer.Monitor.csproj" />
+    <ProjectReference Include="..\InternetTracer.Ipc\InternetTracer.Ipc.csproj" />
+  </ItemGroup>
+</Project>

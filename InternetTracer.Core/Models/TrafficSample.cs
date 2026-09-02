@@ -4,6 +4,7 @@ public class TrafficSample
 {
     public DateTime TimestampUtc { get; set; }
     public string InterfaceId { get; set; } = string.Empty;
+    public string? ApplicationId { get; set; }
     public long BytesReceived { get; set; }
     public long BytesSent { get; set; }
 }

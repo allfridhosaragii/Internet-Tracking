@@ -9,17 +9,19 @@ public partial class DashboardViewModel : ObservableObject
 {
     private readonly ITelemetryServiceApi _telemetryService;
 
+#pragma warning disable MVVMTK0045 // WinRT AOT warning
     [ObservableProperty]
-    public partial DashboardSummary? Summary { get; set; }
+    private DashboardSummary? _summary;
 
     [ObservableProperty]
-    public partial CurrentSnapshot? Snapshot { get; set; }
+    private CurrentSnapshot? _snapshot;
 
     [ObservableProperty]
-    public partial ConnectionQuality? Quality { get; set; }
+    private ConnectionQuality? _quality;
 
     [ObservableProperty]
-    public partial bool IsLoading { get; set; }
+    private bool _isLoading;
+#pragma warning restore MVVMTK0045
 
     public DashboardViewModel(ITelemetryServiceApi telemetryService)
     {

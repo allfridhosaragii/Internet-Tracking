@@ -40,6 +40,15 @@ public class SchemaMigrationEngine
                 last_seen_utc TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS applications (
+                id TEXT PRIMARY KEY,
+                executable_path TEXT,
+                display_name TEXT,
+                publisher TEXT,
+                first_seen_utc TEXT,
+                last_seen_utc TEXT
+            );
+
             CREATE TABLE IF NOT EXISTS traffic_minute (
                 bucket_utc TEXT NOT NULL,
                 interface_id TEXT NOT NULL,
@@ -49,7 +58,7 @@ public class SchemaMigrationEngine
                 upload_bytes INTEGER NOT NULL,
                 sample_count INTEGER NOT NULL,
                 attribution_state INTEGER NOT NULL,
-                PRIMARY KEY (bucket_utc, interface_id)
+                PRIMARY KEY (bucket_utc, interface_id, application_id)
             );
 
             CREATE INDEX IF NOT EXISTS idx_traffic_minute_bucket ON traffic_minute(bucket_utc);
