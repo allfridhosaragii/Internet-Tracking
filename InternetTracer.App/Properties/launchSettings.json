@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "InternetTracer.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "InternetTracer.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
